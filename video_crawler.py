@@ -2,6 +2,7 @@ import concurrent.futures
 import copy
 import os
 import re
+import shutil
 import time
 import urllib.request
 from functools import partial
@@ -67,8 +68,7 @@ def download_by_video_url(url):
         if not os.path.exists(output_dir):
             os.makedirs(output_dir)
 
-    # 得到 m3u8 網址
-    htmlfile = cloudscraper.create_scraper(browser='firefox', delay=10).get(url)
+    htmlfile = cloudscraper.create_scraper(browser='chrome', delay=10).get(url)
     video_full_name = get_video_full_name(video_id, htmlfile)
 
     if os.path.exists(os.path.join(output_dir, video_full_name + '.mp4')):
@@ -86,11 +86,9 @@ def download_by_video_url(url):
     m3u8urlList.pop(-1)
     downloadurl = '/'.join(m3u8urlList)
 
-    # 儲存 m3u8 file 至資料夾
     m3u8file = os.path.join(tmp_dir_name, video_id + '.m3u8')
     urllib.request.urlretrieve(m3u8url, m3u8file)
 
-    # 得到 m3u8 file裡的 URI和 IV
     m3u8obj = m3u8.load(m3u8file)
     m3u8uri = ''
     m3u8iv = ''
@@ -100,41 +98,33 @@ def download_by_video_url(url):
             m3u8uri = key.uri
             m3u8iv = key.iv
 
-    # 儲存 ts網址 in tsList
     tsList = []
     for seg in m3u8obj.segments:
         tsUrl = downloadurl + '/' + seg.uri
         tsList.append(tsUrl)
 
-    # 有加密
     if m3u8uri:
-        m3u8keyurl = downloadurl + '/' + m3u8uri  # 得到 key 的網址
+        m3u8keyurl = downloadurl + '/' + m3u8uri
 
-        # 得到 key的內容
         response = requests.get(m3u8keyurl, headers=headers, timeout=10)
         contentKey = response.content
 
-        vt = m3u8iv.replace("0x", "")[:16].encode()  # IV取前16位
+        vt = m3u8iv.replace("0x", "")[:16].encode()
 
-        ci = AES.new(contentKey, AES.MODE_CBC, vt)  # 建構解碼器
+        ci = AES.new(contentKey, AES.MODE_CBC, vt)
     else:
         ci = ''
 
-    # 刪除m3u8 file
     deleteM3u8(tmp_dir_name)
 
-    # 開始爬蟲並下載mp4片段至資料夾
     prepareCrawl(ci, tmp_dir_name, tsList)
 
-    # 合成mp4
     merge_mp4(tmp_dir_name, output_dir, video_full_name, tsList)
 
-    # get cover
     if CONF.get("downloadVideoCover", True):
         get_cover(html_file=htmlfile, folder_path=output_dir)
 
-    # 刪除子mp4
-    os.removedirs(tmp_dir_name)
+    shutil.rmtree(tmp_dir_name)
 
 
 def scrape(ci, folderPath, downloadList, urls):
@@ -142,8 +132,8 @@ def scrape(ci, folderPath, downloadList, urls):
     fileName = urls.split('/')[-1][0:-3]
     saveName = os.path.join(folderPath, fileName + ".mp4")
     if os.path.exists(saveName):
-        # 跳過已下載
-        print('當前目標: {0} 已下載, 故跳過...剩餘 {1} 個'.format(
+
+        print('当前目标: {0} 已下载, 故跳过...剩余 {1} 个'.format(
             urls.split('/')[-1], len(downloadList)))
         downloadList.remove(urls)
     else:
@@ -151,31 +141,29 @@ def scrape(ci, folderPath, downloadList, urls):
         if response.status_code == 200:
             content_ts = response.content
             if ci:
-                content_ts = ci.decrypt(content_ts)  # 解碼
+                content_ts = ci.decrypt(content_ts)
             with open(saveName, 'ab') as f:
                 f.write(content_ts)
-                # 輸出進度
+
             downloadList.remove(urls)
-        print('\r當前下載: {0} , 剩餘 {1} 個, status code: {2}'.format(
+        print('\r当前下载: {0} , 剩余 {1} 个, status code: {2}'.format(
             urls.split('/')[-1], len(downloadList), response.status_code), end='', flush=True)
 
 
 def prepareCrawl(ci, folderPath, tsList):
     downloadList = copy.deepcopy(tsList)
-    # 開始時間
-    start_time = time.time()
-    print('開始下載 ' + str(len(downloadList)) + ' 個檔案..', end='')
-    print('預計等待時間: {0:.2f} 分鐘 視影片長度與網路速度而定)'.format(len(downloadList) / 150))
 
-    # 開始爬取
+    start_time = time.time()
+    print('开始下载 ' + str(len(downloadList)) + ' 个文件..', end='')
+    print('预计等待时间: {0:.2f} 分钟 视视频大小和网络速度而定)'.format(len(downloadList) / 150))
+
     startCrawl(ci, folderPath, downloadList)
 
     end_time = time.time()
-    print('\n花費 {0:.2f} 分鐘 爬取完成 !'.format((end_time - start_time) / 60))
+    print('\n消耗 {0:.2f} 分钟 同步1个视频完成 !'.format((end_time - start_time) / 60))
 
 
 def startCrawl(ci, folderPath, downloadList):
-    # 同時建立及啟用 20 個執行緒
     round = 0
     while (downloadList != []):
         with concurrent.futures.ThreadPoolExecutor(max_workers=8) as executor:

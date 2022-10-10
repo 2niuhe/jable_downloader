@@ -3,13 +3,13 @@
 import argparse
 from executor import process_subscription, process_videos
 
-parser = argparse.ArgumentParser(description="Jable TV Downloader")
+parser = argparse.ArgumentParser(description="jable downloader")
 
 sub_parser = parser.add_subparsers()
 
 video_parser = sub_parser.add_parser("videos", help="download video by urls")
 video_parser.add_argument("urls", metavar='N', type=str, nargs='+',
-                          help="Jable TV URLs to download")
+                          help="jable video urls to download")
 
 video_parser.set_defaults(func=process_videos)
 

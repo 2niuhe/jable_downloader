@@ -41,8 +41,6 @@ def get_all_video_ids(url):
             soup = BeautifulSoup(content, 'html.parser')
             a_tags = soup.select('div.img-box>a')
             for a_tag in a_tags:
-                if "080819-001" in a_tag['href']:
-                    print(a_tag['href'])
                 video_ids.add(a_tag['href'].split('/')[-2])
 
     print('%s => 获取到 %s 个影片' % (tag_name, len(video_ids)))

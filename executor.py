@@ -24,7 +24,6 @@ def process_subscription(args):
             print(subs)
         else:
             print("subscription already exists.")
-        # print(model_crawler.get_all_video_links(input_url))
     elif args.get:
         print("current subscriptions:\n")
         print(CONF.get('subscriptions', []))
@@ -36,6 +35,7 @@ def process_subscription(args):
         base_url = "https://jable.tv/videos/"
 
         download_inerval = CONF.get("downloadInterval", 1)
+        print(all_subs)
 
         for subs in all_subs:
 
@@ -44,13 +44,15 @@ def process_subscription(args):
 
             print("start sync %s remote video to local..." % subs['name'])
             print("need sync video number is %s " % len(need_sync_video_ids))
-            for video_id in need_sync_video_ids:
+            for index, video_id in enumerate(need_sync_video_ids):
                 download_url = base_url + video_id + '/'
                 video_crawler.download_by_video_url(download_url)
 
                 local_video_id_set.add(video_id)
-                print("sleep %s seconds" % download_inerval)
-                time.sleep(download_inerval)
+                if index < len(need_sync_video_ids) - 1:
+                    print("sleep %s seconds" % download_inerval)
+                    time.sleep(download_inerval)
+        print("sync success.")
 
 
 def process_videos(args):

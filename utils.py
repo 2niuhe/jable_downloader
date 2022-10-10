@@ -23,7 +23,7 @@ def get_local_video_list(path="./"):
 
 def merge_mp4(input_path, output_path, video_name, tsList):
     start_time = time.time()
-    print('開始合成影片..')
+    print('开始合成视频...')
 
     for i in range(len(tsList)):
         file = tsList[i].split('/')[-1][0:-3] + '.mp4'
@@ -33,10 +33,11 @@ def merge_mp4(input_path, output_path, video_name, tsList):
                 with open(os.path.join(output_path, video_name + '.mp4'), 'ab') as f2:
                     f2.write(f1.read())
         else:
-            print(file + " 失敗 ")
+            # TODO: retry download
+            print(file + "不存在 失败 ")
     end_time = time.time()
-    print('花費 {0:.2f} 秒合成影片'.format(end_time - start_time))
-    print('下載完成!')
+    print('消耗 {0:.2f} 秒合成视频'.format(end_time - start_time))
+    print('%s 下载完成!' % video_name)
 
 
 def deleteM3u8(folderPath):
