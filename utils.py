@@ -25,6 +25,9 @@ def merge_mp4(input_path, output_path, video_name, tsList):
     start_time = time.time()
     print('开始合成视频...')
 
+    if len(video_name.encode()) > 248:
+        video_name = video_name[:50]
+
     for i in range(len(tsList)):
         file = tsList[i].split('/')[-1][0:-3] + '.mp4'
         full_path = os.path.join(input_path, file)

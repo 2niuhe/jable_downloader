@@ -41,10 +41,12 @@ def process_subscription(args):
 
             remote_video_id_set = model_crawler.get_all_video_ids(subs['url'])
             need_sync_video_ids = remote_video_id_set - local_video_id_set
+            need_sync_number = len(need_sync_video_ids)
 
             print("start sync %s remote video to local..." % subs['name'])
-            print("need sync video number is %s " % len(need_sync_video_ids))
+
             for index, video_id in enumerate(need_sync_video_ids):
+                print("该订阅需同步视频 %s 个 / 剩余 %s 个 " % (need_sync_number, need_sync_number - index))
                 download_url = base_url + video_id + '/'
                 video_crawler.download_by_video_url(download_url)
 
