@@ -1,7 +1,24 @@
+import json
 import os
 import re
 import time
 from pathlib import Path
+
+video_index_cache_filename = "./jable_index_cache.json"
+
+
+def get_video_ids_map_from_cache():
+    cache = {}
+    if os.path.exists(video_index_cache_filename):
+        with open(video_index_cache_filename, 'r', encoding='utf-8') as f:
+            cache = json.load(f)
+
+    return cache
+
+
+def update_video_ids_cache(data):
+    with open(video_index_cache_filename, 'w', encoding='utf8') as f:
+        json.dump(data, f, ensure_ascii=False)
 
 
 def get_local_video_list(path="./"):
@@ -24,9 +41,6 @@ def get_local_video_list(path="./"):
 def merge_mp4(input_path, output_path, video_name, tsList):
     start_time = time.time()
     print('开始合成视频...')
-
-    if len(video_name.encode()) > 248:
-        video_name = video_name[:50]
 
     for i in range(len(tsList)):
         file = tsList[i].split('/')[-1][0:-3] + '.mp4'

@@ -16,8 +16,9 @@ video_parser.set_defaults(func=process_videos)
 models_parser = sub_parser.add_parser("subscription",
                                       help="subscribe some topic(models or tags)/sync videos from subscriptions")
 
-models_parser.add_argument("--add", type=str, default="",
-                           help="add subscription by single url, support models/tags")
+models_parser.add_argument("--add", type=str,  metavar='N', nargs='+', default=[],
+                           help="add subscriptions by urls(support models/tags). "
+                                "One sub containing multi urls means the intersection of urls.")
 models_parser.add_argument("--get", action='store_true',
                            help="get current subscription")
 models_parser.add_argument("--sync-videos", action='store_true',

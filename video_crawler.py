@@ -31,6 +31,9 @@ def get_video_full_name(video_id, html_file):
         video_full_name = meta_content
         break
 
+    if len(video_full_name.encode()) > 248:
+        video_full_name = video_full_name[:50]
+
     return video_full_name
 
 
@@ -72,7 +75,7 @@ def download_by_video_url(url):
     video_full_name = get_video_full_name(video_id, htmlfile)
 
     if os.path.exists(os.path.join(output_dir, video_full_name + '.mp4')):
-        print(video_full_name + "already exists, skip download")
+        print(video_full_name + "already exist, skip download.")
         return
 
     tmp_dir_name = os.path.join(output_dir, video_id)
@@ -144,6 +147,9 @@ def scrape(ci, folderPath, downloadList, urls):
                 content_ts = ci.decrypt(content_ts)
             with open(saveName, 'ab') as f:
                 f.write(content_ts)
+        else:
+            pass
+            # retry
 
             downloadList.remove(urls)
         print('\r当前下载: {0} , 剩余 {1} 个, status code: {2}'.format(

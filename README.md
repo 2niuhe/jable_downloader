@@ -30,6 +30,9 @@ python main.py subscription --add https://jable.tv/models/sakura-momo/
 python main.py subscription --get
 # 下载/同步订阅内容到本地(不会下载已下载内容)
 python main.py subscription --sync-videos
+
+# h265编码压缩视频(可选)(体积可以减少超过一半)
+ffmpeg -i input.mp4 -c:v libx265 -vtag hvc1 -c:a copy output.mkv
 ```
 
 ### config
