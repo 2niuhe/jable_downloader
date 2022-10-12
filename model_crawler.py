@@ -1,9 +1,7 @@
-import requests
 import time
 from bs4 import BeautifulSoup
 
 import utils
-from config import headers
 
 
 def input_url_validator(tag_url):
@@ -39,7 +37,7 @@ def get_model_total_video_num(url):
     foo = soup.select('span.inactive-color')
     if foo:
         if foo[0].text.split()[0].isdigit():
-            totall_num = int(foo[0].text.split()[0])
+            total_num = int(foo[0].text.split()[0])
 
     return total_num
 
@@ -76,6 +74,7 @@ def get_all_video_ids(url, cached_ids_set=None):
         if cached_ids_set and total_video_num > 1000 and \
                 abs((total_video_num - len(cached_ids_set))) * 100 < len(cached_ids_set):
             print("缓存索引和远端误差低于百分之一, 本地 %s 远端 %s 不更新 %s 索引\n" % (len(cached_ids_set), total_video_num, url))
+            print("新增 %s 个索引" % len(video_ids - cached_ids_set))
             video_ids |= cached_ids_set
             break
 
