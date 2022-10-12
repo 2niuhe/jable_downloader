@@ -1,7 +1,7 @@
 # jable_downloader
 download jable tv tool
 
-![GitHub](https://img.shields.io/github/license/2niuhe/jable_downloader)
+![GitHub](https://img.shields.io/github/license/2niuhe/jable_downloader) ![GitHub Pipenv locked Python version](https://img.shields.io/github/pipenv/locked/python-version/2niuhe/jable_downloader)
 
 
 ### Introduction
@@ -46,6 +46,7 @@ ffmpeg -i input.mp4 -c:v libx265 -vtag hvc1 -c:a copy output.mkv
 - downloadInterval： 每个视频之间的下载间隔，默认300s
 - outputDir：下载的输出目录，默认当前工作目录
 - subscriptions： 订阅的视频类别，支持models/tags等，建议通过命令行` python main.py subscription --add `添加
+- videoIdBlockList: 需要跳过的番号列表
 
 *下是订阅了桜空もも的中文字幕视频*
 
@@ -53,7 +54,8 @@ ffmpeg -i input.mp4 -c:v libx265 -vtag hvc1 -c:a copy output.mkv
 {
     "downloadVideoCover": false,     
     "downloadInterval": 300,
-    "outputDir": "./",
+    "outputDir": "./", 
+    "videoIdBlockList": ["abc-123", "def-456"],
     "subscriptions": [
         [
             {
