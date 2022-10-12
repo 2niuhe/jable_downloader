@@ -1,10 +1,15 @@
 import json
 import os
 import re
+import requests
 import time
 from pathlib import Path
 
+from config import CONF
+
 video_index_cache_filename = "./jable_index_cache.json"
+
+HEADERS = CONF.get("headers")
 
 
 def get_video_ids_map_from_cache():
@@ -14,6 +19,21 @@ def get_video_ids_map_from_cache():
             cache = json.load(f)
 
     return cache
+
+
+def requests_with_retry(url, headers=HEADERS, timeout=20, retry=3):
+
+    for i in range(1, retry+1):
+        response = requests.get(url, headers=headers, timeout=timeout)
+
+        if str(response.status_code).startswith('2'):
+            return response
+        else:
+            print("url %s response %s, retry later. " % (url, response.status_code))
+            time.sleep(120 * i)
+            continue
+    print("%s exceed max retry time, response code: %s" % (url, response.status_code))
+    return
 
 
 def update_video_ids_cache(data):

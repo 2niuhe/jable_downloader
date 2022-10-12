@@ -2,12 +2,24 @@ import json
 import os
 
 
+CONF = {
+    "downloadVideoCover": False,
+    "downloadInterval": 300,
+    "outputDir": "./",
+    "subscriptions": [],
+    "videoIdBlockList": [],
+    "headers": {
+        "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:105.0) Gecko/20100101 Firefox/105.0"
+    }
+}
+
+
 def get_config(conf_path='./config.json'):
     if not os.path.exists(conf_path):
-        return {}
+        return
 
     with open(conf_path, 'r', encoding='utf8') as f:
-        return json.load(f)
+        return CONF.update(json.load(f))
 
 
 def update_config(conf, conf_path='./config.json'):
@@ -15,6 +27,6 @@ def update_config(conf, conf_path='./config.json'):
         json.dump(conf, f, indent=4, ensure_ascii=False)
 
 
-CONF = get_config()
-default_headers = "Mozilla/5.0 (X11; Linux x86_64; rv:105.0) Gecko/20100101 Firefox/105.0"
-headers = CONF.get("headers", default_headers)
+get_config()
+
+headers = CONF.get("headers")

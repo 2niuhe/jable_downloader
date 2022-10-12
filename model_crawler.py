@@ -2,6 +2,7 @@ import requests
 import time
 from bs4 import BeautifulSoup
 
+import utils
 from config import headers
 
 
@@ -11,35 +12,36 @@ def input_url_validator(tag_url):
 
 
 def get_model_names_and_last_page_num(url):
-    res = requests.get(url, headers=headers, timeout=20)
-    last_page_num = 1
-    if res.status_code == 200:
-        content = res.content
-        soup = BeautifulSoup(content, 'html.parser')
+    res = utils.requests_with_retry(url)
 
-        model_name = soup.select('#list_videos_common_videos_list > section > div > div > div > h2')[0].text
-        page_items = soup.select('.pagination>.page-item>.page-link')
-        last_item = page_items[-1].get('data-parameters')
-        if last_item:
-            page_num = last_item.split(":")[-1]
-            if page_num.isdigit():
-                last_page_num = int(last_item.split(":")[-1])
+    last_page_num = 1
+
+    content = res.content
+    soup = BeautifulSoup(content, 'html.parser')
+
+    model_name = soup.select('#list_videos_common_videos_list > section > div > div > div > h2')[0].text
+    page_items = soup.select('.pagination>.page-item>.page-link')
+    last_item = page_items[-1].get('data-parameters')
+    if last_item:
+        page_num = last_item.split(":")[-1]
+        if page_num.isdigit():
+            last_page_num = int(last_item.split(":")[-1])
+
     return model_name, last_page_num
 
 
 def get_model_total_video_num(url):
-    res = requests.get(url, headers=headers, timeout=20)
-    if res.status_code == 200:
-        content = res.content
-        soup = BeautifulSoup(content, 'html.parser')
+    res = utils.requests_with_retry(url)
+    content = res.content
+    soup = BeautifulSoup(content, 'html.parser')
 
-        totall_num = 0
-        foo = soup.select('span.inactive-color')
-        if foo:
-            if foo[0].text.split()[0].isdigit():
-                totall_num = int(foo[0].text.split()[0])
+    total_num = 0
+    foo = soup.select('span.inactive-color')
+    if foo:
+        if foo[0].text.split()[0].isdigit():
+            totall_num = int(foo[0].text.split()[0])
 
-    return totall_num
+    return total_num
 
 
 def get_all_video_ids(url, cached_ids_set=None):
@@ -48,7 +50,7 @@ def get_all_video_ids(url, cached_ids_set=None):
         url = url + '/'
 
     total_video_num = 0
-    if cached_ids_set and last_page_num > 4:
+    if cached_ids_set and last_page_num > 10:
         total_video_num = get_model_total_video_num(url)
 
     video_ids = set()
@@ -59,18 +61,16 @@ def get_all_video_ids(url, cached_ids_set=None):
         if page_num % 10 == 0:
             time.sleep(10)
 
-        try:
-            res = requests.get(page_url, headers=headers, timeout=20)
-        except:
-            time.sleep(30)
-            res = requests.get(page_url, headers=headers, timeout=20)
+        res = utils.requests_with_retry(page_url)
 
-        if res.status_code == 200:
-            content = res.content
-            soup = BeautifulSoup(content, 'html.parser')
-            a_tags = soup.select('div.img-box>a')
-            for a_tag in a_tags:
-                video_ids.add(a_tag['href'].split('/')[-2])
+        if not res:
+            raise Exception("get page info error, url: %s" % page_url)
+
+        content = res.content
+        soup = BeautifulSoup(content, 'html.parser')
+        a_tags = soup.select('div.img-box>a')
+        for a_tag in a_tags:
+            video_ids.add(a_tag['href'].split('/')[-2])
 
         # allow 1% miss
         if cached_ids_set and total_video_num > 1000 and \

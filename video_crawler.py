@@ -13,6 +13,7 @@ import requests
 from Crypto.Cipher import AES
 from bs4 import BeautifulSoup
 
+import utils
 from config import CONF, headers
 from utils import deleteM3u8
 from utils import merge_mp4
@@ -109,7 +110,7 @@ def download_by_video_url(url):
     if m3u8uri:
         m3u8keyurl = downloadurl + '/' + m3u8uri
 
-        response = requests.get(m3u8keyurl, headers=headers, timeout=10)
+        response = utils.requests_with_retry(m3u8keyurl)
         contentKey = response.content
 
         vt = m3u8iv.replace("0x", "")[:16].encode()
@@ -135,23 +136,24 @@ def scrape(ci, folderPath, downloadList, urls):
     fileName = urls.split('/')[-1][0:-3]
     saveName = os.path.join(folderPath, fileName + ".mp4")
     if os.path.exists(saveName):
-
         print('当前目标: {0} 已下载, 故跳过...剩余 {1} 个'.format(
             urls.split('/')[-1], len(downloadList)))
         downloadList.remove(urls)
     else:
-        response = requests.get(urls, headers=CONF['headers'], timeout=10)
-        if response.status_code == 200:
-            content_ts = response.content
-            if ci:
-                content_ts = ci.decrypt(content_ts)
-            with open(saveName, 'ab') as f:
-                f.write(content_ts)
-        else:
-            pass
-            # retry
+        response = utils.requests_with_retry(urls)
 
-            downloadList.remove(urls)
+        if not response:
+            print('当前目标: {0} 下载失败, 继续下载剩余内容...剩余 {1} 个'.format(
+            urls.split('/')[-1], len(downloadList)))
+            return
+
+        content_ts = response.content
+        if ci:
+            content_ts = ci.decrypt(content_ts)
+        with open(saveName, 'ab') as f:
+            f.write(content_ts)
+
+        downloadList.remove(urls)
         print('\r当前下载: {0} , 剩余 {1} 个, status code: {2}'.format(
             urls.split('/')[-1], len(downloadList), response.status_code), end='', flush=True)
 

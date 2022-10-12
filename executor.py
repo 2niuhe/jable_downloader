@@ -1,3 +1,4 @@
+import re
 import time
 
 import config
@@ -61,6 +62,8 @@ def process_subscription(args):
         output_path = CONF.get("outputDir", './')
 
         local_video_id_set = utils.get_local_video_list(path=output_path)
+        block_video_ids = {str.lower(video_id) for video_id in config.CONF.get("videoIdBlockList", [])}
+        ignore_video_ids = local_video_id_set | block_video_ids
         base_url = "https://jable.tv/videos/"
 
         download_inerval = CONF.get("downloadInterval", 1)
@@ -69,7 +72,7 @@ def process_subscription(args):
 
         for subs in all_subs:
             remote_video_id_set = get_need_sync_video_ids(subs)
-            need_sync_video_ids = remote_video_id_set - local_video_id_set
+            need_sync_video_ids = remote_video_id_set - ignore_video_ids
             need_sync_number = len(need_sync_video_ids)
 
             print("start sync %s remote video to local..." % subs)
@@ -96,5 +99,19 @@ def process_videos(args):
             video_urls.append(url+'/')
         else:
             video_urls.append(url)
+
+    output_path = CONF.get("outputDir", './')
+    local_video_id_set = utils.get_local_video_list(path=output_path)
+    block_video_ids = {str.lower(video_id) for video_id in config.CONF.get("videoIdBlockList", [])}
+    ignore_video_ids = local_video_id_set | block_video_ids
+
+    re_extractor = re.compile(r"[a-zA-Z0-9]{3,}-\d{3,}")
+
     for video_url in video_urls:
+        re_res = re_extractor.search(video_url)
+        if re_res:
+            video_id = re_res.group(0)
+            if video_id and video_id in ignore_video_ids:
+                print("视频 %s 已经下载，跳过该视频" % video_url)
+                continue
         video_crawler.download_by_video_url(video_url)

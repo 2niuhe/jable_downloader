@@ -2,3 +2,5 @@
 *.mp4
 *.jpg
 .idea/
+*.json
+nohup.out

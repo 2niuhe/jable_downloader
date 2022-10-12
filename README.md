@@ -1,8 +1,11 @@
 # jable_downloader
 download jable tv tool
 
-### introduction
-下载jable tv视频助手
+![GitHub](https://img.shields.io/github/license/2niuhe/jable_downloader)
+
+
+### Introduction
+下载jable tv视频助手:heart_eyes:
 
 支持功能：
 - 指定视频url下载到指定目录
@@ -10,7 +13,7 @@ download jable tv tool
 - 支持下载视频完毕后下载封面
 - 支持检查输出目录，防重复下载
 
-### usage
+### Usage
 
 **使用方法**
 
@@ -35,7 +38,7 @@ python main.py subscription --sync-videos
 ffmpeg -i input.mp4 -c:v libx265 -vtag hvc1 -c:a copy output.mkv
 ```
 
-### config
+### Config
 
 配置项(json文件)说明
 
@@ -44,24 +47,27 @@ ffmpeg -i input.mp4 -c:v libx265 -vtag hvc1 -c:a copy output.mkv
 - outputDir：下载的输出目录，默认当前工作目录
 - subscriptions： 订阅的视频类别，支持models/tags等，建议通过命令行` python main.py subscription --add `添加
 
+*下是订阅了桜空もも的中文字幕视频*
+
 ```json
 {
     "downloadVideoCover": false,     
     "downloadInterval": 300,
     "outputDir": "./",
     "subscriptions": [
-        {
-            "url": "https://jable.tv/models/sakura-momo/",
-            "name": "桜空もも"
-        }
+        [
+            {
+                "url": "https://jable.tv/models/sakura-momo/",
+                "name": "桜空もも"
+            },
+            {
+                "url": "https://jable.tv/categories/chinese-subtitle/",
+                "name": "中文字幕"
+            }
+        ]
     ]
 }
 ```
 
-### TODO
-
-- 支持类别的交集
-- 本地缓存订阅类别的视频索引
-
-### reference
+### Reference
 [JableTVDownload](https://github.com/hcjohn463/JableTVDownload)
