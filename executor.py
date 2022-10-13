@@ -74,6 +74,8 @@ def process_subscription(args):
             remote_video_id_set = get_need_sync_video_ids(subs)
             need_sync_video_ids = remote_video_id_set - ignore_video_ids
             need_sync_number = len(need_sync_video_ids)
+            print("该订阅远端 %s 个 / 本地已存在 %s 个 " %
+                  (len(remote_video_id_set), len(remote_video_id_set & ignore_video_ids)))
 
             print("start sync %s remote video to local..." % subs)
 
@@ -83,7 +85,7 @@ def process_subscription(args):
                 print(download_url)
                 video_crawler.download_by_video_url(download_url)
 
-                local_video_id_set.add(video_id)
+                ignore_video_ids.add(video_id)
                 if index < len(need_sync_video_ids) - 1:
                     print("sleep %s seconds" % download_inerval)
                     time.sleep(download_inerval)
@@ -115,3 +117,4 @@ def process_videos(args):
                 print("视频 %s 已经下载，跳过该视频" % video_url)
                 continue
         video_crawler.download_by_video_url(video_url)
+        ignore_video_ids.add(video_id)

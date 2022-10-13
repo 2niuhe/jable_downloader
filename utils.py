@@ -22,9 +22,22 @@ def get_video_ids_map_from_cache():
 
 
 def requests_with_retry(url, headers=HEADERS, timeout=20, retry=3):
+    query_param = {
+        'headers': headers,
+        'timeout': timeout
+    }
+    proxies_config = CONF.get('proxies', None)
+    if proxies_config and 'http' in proxies_config and 'https' in proxies_config:
+        query_param['proxies'] = proxies_config
 
     for i in range(1, retry+1):
-        response = requests.get(url, headers=headers, timeout=timeout)
+        try:
+
+            response = requests.get(url, **query_param)
+        except requests.exceptions.ProxyError:
+            print("Proxy Error: %s, retry later." % url)
+            time.sleep(120 * i)
+            continue
 
         if str(response.status_code).startswith('2'):
             return response

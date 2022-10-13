@@ -1,4 +1,3 @@
-import time
 from bs4 import BeautifulSoup
 
 import utils
@@ -56,10 +55,10 @@ def get_all_video_ids(url, cached_ids_set=None):
         page_url = url + "?from=%s" % page_num
         print("\r抓取 %s 第 %s 页 共 %s 页" % (tag_name, page_num, last_page_num), end="", flush=True)
 
-        if page_num % 10 == 0:
-            time.sleep(10)
+        # if page_num % 10 == 0:
+        #     time.sleep(10)
 
-        res = utils.requests_with_retry(page_url)
+        res = utils.requests_with_retry(page_url, retry=10)
 
         if not res:
             raise Exception("get page info error, url: %s" % page_url)

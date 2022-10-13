@@ -14,7 +14,7 @@ from Crypto.Cipher import AES
 from bs4 import BeautifulSoup
 
 import utils
-from config import CONF, headers
+from config import CONF
 from utils import deleteM3u8
 from utils import merge_mp4
 
@@ -72,7 +72,15 @@ def download_by_video_url(url):
         if not os.path.exists(output_dir):
             os.makedirs(output_dir)
 
-    htmlfile = cloudscraper.create_scraper(browser='chrome', delay=10).get(url)
+    query_params = {
+        'browser': 'chrome',
+        'delay': 20
+    }
+    proxies_config = CONF.get('proxies', None)
+    if proxies_config and 'http' in proxies_config and 'https' in proxies_config:
+        query_params['proxies'] = proxies_config
+
+    htmlfile = cloudscraper.create_scraper(**query_params).get(url)
     video_full_name = get_video_full_name(video_id, htmlfile)
 
     if os.path.exists(os.path.join(output_dir, video_full_name + '.mp4')):
