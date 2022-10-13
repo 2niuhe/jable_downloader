@@ -50,6 +50,10 @@ def get_all_video_ids(url, cached_ids_set=None):
     if cached_ids_set and last_page_num > 10:
         total_video_num = get_model_total_video_num(url)
 
+    if cached_ids_set and len(cached_ids_set) == total_video_num:
+        print("远端无更新，索引和本地缓存一致，跳过抓取索引")
+        return cached_ids_set
+
     video_ids = set()
     for page_num in range(1, last_page_num + 1):
         page_url = url + "?from=%s" % page_num
@@ -58,7 +62,7 @@ def get_all_video_ids(url, cached_ids_set=None):
         # if page_num % 10 == 0:
         #     time.sleep(10)
 
-        res = utils.requests_with_retry(page_url, retry=10)
+        res = utils.requests_with_retry(page_url, retry=20)
 
         if not res:
             raise Exception("get page info error, url: %s" % page_url)

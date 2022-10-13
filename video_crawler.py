@@ -4,12 +4,10 @@ import os
 import re
 import shutil
 import time
-import urllib.request
 from functools import partial
 
 import cloudscraper
 import m3u8
-import requests
 from Crypto.Cipher import AES
 from bs4 import BeautifulSoup
 
@@ -49,7 +47,7 @@ def get_cover(html_file, folder_path):
         if "preview.jpg" not in meta_content:
             continue
         try:
-            r = requests.get(meta_content)
+            r = utils.requests_with_retry(meta_content)
             with open(cover_path, "wb") as cover_fh:
                 r.raw.decode_content = True
                 for chunk in r.iter_content(chunk_size=1024):
@@ -72,21 +70,18 @@ def download_by_video_url(url):
         if not os.path.exists(output_dir):
             os.makedirs(output_dir)
 
-    query_params = {
-        'browser': 'chrome',
-        'delay': 20
-    }
+    query_params = dict()
     proxies_config = CONF.get('proxies', None)
     if proxies_config and 'http' in proxies_config and 'https' in proxies_config:
         query_params['proxies'] = proxies_config
 
-    htmlfile = cloudscraper.create_scraper(**query_params).get(url)
+    htmlfile = cloudscraper.create_scraper(browser='chrome', delay=20).get(url, **query_params)
     video_full_name = get_video_full_name(video_id, htmlfile)
 
     if os.path.exists(os.path.join(output_dir, video_full_name + '.mp4')):
         print(video_full_name + "already exist, skip download.")
         return
-
+    print("start download %s " % video_full_name)
     tmp_dir_name = os.path.join(output_dir, video_id)
     if not os.path.exists(tmp_dir_name):
         os.makedirs(tmp_dir_name)
@@ -99,7 +94,9 @@ def download_by_video_url(url):
     downloadurl = '/'.join(m3u8urlList)
 
     m3u8file = os.path.join(tmp_dir_name, video_id + '.m3u8')
-    urllib.request.urlretrieve(m3u8url, m3u8file)
+    response = utils.requests_with_retry(m3u8url)
+    with open(m3u8file, 'wb') as f:
+        f.write(response.content)
 
     m3u8obj = m3u8.load(m3u8file)
     m3u8uri = ''
@@ -144,11 +141,11 @@ def scrape(ci, folderPath, downloadList, urls):
     fileName = urls.split('/')[-1][0:-3]
     saveName = os.path.join(folderPath, fileName + ".mp4")
     if os.path.exists(saveName):
-        print('当前目标: {0} 已下载, 故跳过...剩余 {1} 个'.format(
-            urls.split('/')[-1], len(downloadList)))
+        print('\r当前目标: {0} 已下载, 故跳过...剩余 {1} 个'.format(
+            urls.split('/')[-1], len(downloadList)), end='', flush=True)
         downloadList.remove(urls)
     else:
-        response = utils.requests_with_retry(urls)
+        response = utils.requests_with_retry(urls, retry=5)
 
         if not response:
             print('当前目标: {0} 下载失败, 继续下载剩余内容...剩余 {1} 个'.format(

@@ -2,6 +2,7 @@
     "downloadVideoCover": false,
     "downloadInterval": 300,
     "outputDir": "./",
+    "proxies": {},
     "subscriptions": [],
     "videoIdBlockList": [],
     "headers": {

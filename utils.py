@@ -32,7 +32,6 @@ def requests_with_retry(url, headers=HEADERS, timeout=20, retry=3):
 
     for i in range(1, retry+1):
         try:
-
             response = requests.get(url, **query_param)
         except requests.exceptions.ProxyError:
             print("Proxy Error: %s, retry later." % url)
@@ -64,7 +63,7 @@ def get_local_video_list(path="./"):
             movie_id = foo.group(0).lower()
         return movie_id
 
-    result = {extract_movie_id(str(foo)) for foo in list(Path(path).rglob("*.mp4"))}
+    result = {extract_movie_id(foo.name) for foo in list(Path(path).rglob("*.mp4"))}
     if None in result:
         result.remove(None)
 
