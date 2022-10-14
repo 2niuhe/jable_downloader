@@ -6,14 +6,13 @@ import shutil
 import time
 from functools import partial
 
-import cloudscraper
 import m3u8
 from Crypto.Cipher import AES
 from bs4 import BeautifulSoup
 
 import utils
 from config import CONF
-from utils import deleteM3u8
+from utils import delete_m3u8
 from utils import merge_mp4
 
 
@@ -70,13 +69,11 @@ def download_by_video_url(url):
         if not os.path.exists(output_dir):
             os.makedirs(output_dir)
 
-    query_params = dict()
-    proxies_config = CONF.get('proxies', None)
-    if proxies_config and 'http' in proxies_config and 'https' in proxies_config:
-        query_params['proxies'] = proxies_config
+    page_res = utils.cloudscraper_requests_get(url, retry=5)
+    if not page_res:
+        raise Exception("retrieve url: %s error." % url)
 
-    htmlfile = cloudscraper.create_scraper(browser='chrome', delay=20).get(url, **query_params)
-    video_full_name = get_video_full_name(video_id, htmlfile)
+    video_full_name = get_video_full_name(video_id, page_res)
 
     if os.path.exists(os.path.join(output_dir, video_full_name + '.mp4')):
         print(video_full_name + "already exist, skip download.")
@@ -86,12 +83,12 @@ def download_by_video_url(url):
     if not os.path.exists(tmp_dir_name):
         os.makedirs(tmp_dir_name)
 
-    result = re.search("https://.+m3u8", htmlfile.text)
+    result = re.search("https://.+m3u8", page_res.text)
     m3u8url = result[0]
 
-    m3u8urlList = m3u8url.split('/')
-    m3u8urlList.pop(-1)
-    downloadurl = '/'.join(m3u8urlList)
+    m3u8url_list = m3u8url.split('/')
+    m3u8url_list.pop(-1)
+    download_url = '/'.join(m3u8url_list)
 
     m3u8file = os.path.join(tmp_dir_name, video_id + '.m3u8')
     response = utils.requests_with_retry(m3u8url)
@@ -107,49 +104,49 @@ def download_by_video_url(url):
             m3u8uri = key.uri
             m3u8iv = key.iv
 
-    tsList = []
+    ts_list = []
     for seg in m3u8obj.segments:
-        tsUrl = downloadurl + '/' + seg.uri
-        tsList.append(tsUrl)
+        ts_url = download_url + '/' + seg.uri
+        ts_list.append(ts_url)
 
     if m3u8uri:
-        m3u8keyurl = downloadurl + '/' + m3u8uri
+        m3u8key_url = download_url + '/' + m3u8uri
 
-        response = utils.requests_with_retry(m3u8keyurl)
-        contentKey = response.content
+        response = utils.requests_with_retry(m3u8key_url)
+        content_key = response.content
 
         vt = m3u8iv.replace("0x", "")[:16].encode()
 
-        ci = AES.new(contentKey, AES.MODE_CBC, vt)
+        ci = AES.new(content_key, AES.MODE_CBC, vt)
     else:
         ci = ''
 
-    deleteM3u8(tmp_dir_name)
+    delete_m3u8(tmp_dir_name)
 
-    prepareCrawl(ci, tmp_dir_name, tsList)
+    prepare_crawl(ci, tmp_dir_name, ts_list)
 
-    merge_mp4(tmp_dir_name, output_dir, video_full_name, tsList)
+    merge_mp4(tmp_dir_name, output_dir, video_full_name, ts_list)
 
     if CONF.get("downloadVideoCover", True):
-        get_cover(html_file=htmlfile, folder_path=output_dir)
+        get_cover(html_file=page_res, folder_path=output_dir)
 
     shutil.rmtree(tmp_dir_name)
 
 
-def scrape(ci, folderPath, downloadList, urls):
+def scrape(ci, folder_path, download_list, urls):
     os.path.split(urls)
     fileName = urls.split('/')[-1][0:-3]
-    saveName = os.path.join(folderPath, fileName + ".mp4")
+    saveName = os.path.join(folder_path, fileName + ".mp4")
     if os.path.exists(saveName):
         print('\r当前目标: {0} 已下载, 故跳过...剩余 {1} 个'.format(
-            urls.split('/')[-1], len(downloadList)), end='', flush=True)
-        downloadList.remove(urls)
+            urls.split('/')[-1], len(download_list)), end='', flush=True)
+        download_list.remove(urls)
     else:
         response = utils.requests_with_retry(urls, retry=5)
 
         if not response:
             print('当前目标: {0} 下载失败, 继续下载剩余内容...剩余 {1} 个'.format(
-            urls.split('/')[-1], len(downloadList)))
+                urls.split('/')[-1], len(download_list)))
             return
 
         content_ts = response.content
@@ -158,29 +155,29 @@ def scrape(ci, folderPath, downloadList, urls):
         with open(saveName, 'ab') as f:
             f.write(content_ts)
 
-        downloadList.remove(urls)
+        download_list.remove(urls)
         print('\r当前下载: {0} , 剩余 {1} 个, status code: {2}'.format(
-            urls.split('/')[-1], len(downloadList), response.status_code), end='', flush=True)
+            urls.split('/')[-1], len(download_list), response.status_code), end='', flush=True)
 
 
-def prepareCrawl(ci, folderPath, tsList):
-    downloadList = copy.deepcopy(tsList)
+def prepare_crawl(ci, folder_path, ts_list):
+    download_list = copy.deepcopy(ts_list)
 
     start_time = time.time()
-    print('开始下载 ' + str(len(downloadList)) + ' 个文件..', end='')
-    print('预计等待时间: {0:.2f} 分钟 视视频大小和网络速度而定)'.format(len(downloadList) / 150))
+    print('开始下载 ' + str(len(download_list)) + ' 个文件..', end='')
+    print('预计等待时间: {0:.2f} 分钟 视视频大小和网络速度而定)'.format(len(download_list) / 150))
 
-    startCrawl(ci, folderPath, downloadList)
+    start_crawl(ci, folder_path, download_list)
 
     end_time = time.time()
     print('\n消耗 {0:.2f} 分钟 同步1个视频完成 !'.format((end_time - start_time) / 60))
 
 
-def startCrawl(ci, folderPath, downloadList):
-    round = 0
-    while (downloadList != []):
+def start_crawl(ci, folder_path, download_list):
+    down_round = 0
+    while download_list:
         with concurrent.futures.ThreadPoolExecutor(max_workers=8) as executor:
-            executor.map(partial(scrape, ci, folderPath,
-                                 downloadList), downloadList)
-        round += 1
-        print(f', round {round}')
+            executor.map(partial(scrape, ci, folder_path,
+                                 download_list), download_list)
+        down_round += 1
+        print(f', round {down_round}')

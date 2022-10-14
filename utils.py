@@ -1,7 +1,9 @@
+import cloudscraper
 import json
 import os
 import re
 import requests
+
 import time
 from pathlib import Path
 
@@ -44,7 +46,31 @@ def requests_with_retry(url, headers=HEADERS, timeout=20, retry=3):
             print("url %s response %s, retry later. " % (url, response.status_code))
             time.sleep(120 * i)
             continue
-    print("%s exceed max retry time, response code: %s" % (url, response.status_code))
+    print("%s exceed max retry time %s." % (url, retry))
+    return
+
+
+def cloudscraper_requests_get(url, retry=3):
+    query_param = dict()
+    proxies_config = CONF.get('proxies', None)
+    if proxies_config and 'http' in proxies_config and 'https' in proxies_config:
+        query_param['proxies'] = proxies_config
+
+    for i in range(1, retry+1):
+        try:
+            response = cloudscraper.create_scraper(browser='chrome', delay=20).get(url, **query_param)
+        except requests.exceptions.ProxyError:
+            print("Proxy Error: %s, retry later." % url)
+            time.sleep(120 * i)
+            continue
+
+        if str(response.status_code).startswith('2'):
+            return response
+        else:
+            print("url %s response %s, retry later. " % (url, response.status_code))
+            time.sleep(120 * i)
+            continue
+    print("%s exceed max retry time %s" % (url, retry))
     return
 
 
@@ -70,12 +96,12 @@ def get_local_video_list(path="./"):
     return result
 
 
-def merge_mp4(input_path, output_path, video_name, tsList):
+def merge_mp4(input_path, output_path, video_name, ts_list):
     start_time = time.time()
     print('开始合成视频...')
 
-    for i in range(len(tsList)):
-        file = tsList[i].split('/')[-1][0:-3] + '.mp4'
+    for i in range(len(ts_list)):
+        file = ts_list[i].split('/')[-1][0:-3] + '.mp4'
         full_path = os.path.join(input_path, file)
         if os.path.exists(full_path):
             with open(full_path, 'rb') as f1:
@@ -89,8 +115,8 @@ def merge_mp4(input_path, output_path, video_name, tsList):
     print('%s 下载完成!' % video_name)
 
 
-def deleteM3u8(folderPath):
-    files = os.listdir(folderPath)
+def delete_m3u8(folder_path):
+    files = os.listdir(folder_path)
     for file in files:
         if file.endswith('.m3u8'):
-            os.remove(os.path.join(folderPath, file))
+            os.remove(os.path.join(folder_path, file))
