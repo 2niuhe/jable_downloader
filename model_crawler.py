@@ -50,8 +50,6 @@ def get_model_total_video_num(url):
 
 def get_all_video_ids(url, cached_ids_set=None):
     tag_name, last_page_num = get_model_names_and_last_page_num(url)
-    if not url.endswith('/'):
-        url = url + '/'
 
     total_video_num = 0
     if cached_ids_set and last_page_num > 10:
@@ -66,13 +64,7 @@ def get_all_video_ids(url, cached_ids_set=None):
         page_url = url + "?from=%s" % page_num
         print("\r抓取 %s 第 %s 页 共 %s 页" % (tag_name, page_num, last_page_num), end="", flush=True)
 
-        # if page_num % 10 == 0:
-        #     time.sleep(10)
-
         res = utils.requests_with_retry(page_url, retry=20)
-
-        if not res:
-            raise Exception("get page info error, url: %s" % page_url)
 
         content = res.content
         soup = BeautifulSoup(content, 'html.parser')

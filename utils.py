@@ -1,11 +1,11 @@
 import cloudscraper
 import json
 import os
+from pathlib import Path
 import re
 import requests
-
+import shutil
 import time
-from pathlib import Path
 
 from config import CONF
 
@@ -23,7 +23,7 @@ def get_video_ids_map_from_cache():
     return cache
 
 
-def requests_with_retry(url, headers=HEADERS, timeout=20, retry=3):
+def requests_with_retry(url, headers=HEADERS, timeout=20, retry=5):
     query_param = {
         'headers': headers,
         'timeout': timeout
@@ -46,11 +46,10 @@ def requests_with_retry(url, headers=HEADERS, timeout=20, retry=3):
             print("url %s response %s, retry later. " % (url, response.status_code))
             time.sleep(120 * i)
             continue
-    print("%s exceed max retry time %s." % (url, retry))
-    return
+    raise Exception("%s exceed max retry time %s." % (url, retry))
 
 
-def cloudscraper_requests_get(url, retry=3):
+def cloudscraper_requests_get(url, retry=5):
     query_param = dict()
     proxies_config = CONF.get('proxies', None)
     if proxies_config and 'http' in proxies_config and 'https' in proxies_config:
@@ -70,8 +69,7 @@ def cloudscraper_requests_get(url, retry=3):
             print("url %s response %s, retry later. " % (url, response.status_code))
             time.sleep(120 * i)
             continue
-    print("%s exceed max retry time %s" % (url, retry))
-    return
+    raise Exception("%s exceed max retry time %s" % (url, retry))
 
 
 def update_video_ids_cache(data):
@@ -109,10 +107,13 @@ def merge_mp4(input_path, output_path, video_name, ts_list):
                     f2.write(f1.read())
         else:
             # TODO: retry download
-            print(file + "不存在 失败 ")
+            print(file + "不存在, 跳过该文件， 最终文件可能不完整 ")
+
     end_time = time.time()
     print('消耗 {0:.2f} 秒合成视频'.format(end_time - start_time))
     print('%s 下载完成!' % video_name)
+
+    shutil.rmtree(input_path)
 
 
 def delete_m3u8(folder_path):

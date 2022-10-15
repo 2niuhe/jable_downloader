@@ -2,7 +2,6 @@ import concurrent.futures
 import copy
 import os
 import re
-import shutil
 import time
 from functools import partial
 
@@ -69,8 +68,6 @@ def download_by_video_url(url):
         os.makedirs(output_dir, exist_ok=True)
 
     page_res = utils.cloudscraper_requests_get(url, retry=5)
-    if not page_res:
-        raise Exception("retrieve url: %s error." % url)
 
     video_full_name = get_video_full_name(video_id, page_res)
 
@@ -129,8 +126,6 @@ def download_by_video_url(url):
     if CONF.get("downloadVideoCover", True):
         get_cover(html_file=page_res, folder_path=output_dir)
 
-    shutil.rmtree(tmp_dir_name)
-
 
 def scrape(ci, folder_path, download_list, urls):
     os.path.split(urls)
@@ -141,9 +136,10 @@ def scrape(ci, folder_path, download_list, urls):
             urls.split('/')[-1], len(download_list)), end='', flush=True)
         download_list.remove(urls)
     else:
-        response = utils.requests_with_retry(urls, retry=5)
-
-        if not response:
+        try:
+            response = utils.requests_with_retry(urls, retry=5)
+        except Exception as e:
+            print(e)
             print('当前目标: {0} 下载失败, 继续下载剩余内容...剩余 {1} 个'.format(
                 urls.split('/')[-1], len(download_list)))
             return

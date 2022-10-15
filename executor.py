@@ -5,7 +5,8 @@ import config
 import model_crawler
 import utils
 import video_crawler
-from config import CONF
+
+CONF = config.CONF
 
 
 def _add_subscription(input_urls):
