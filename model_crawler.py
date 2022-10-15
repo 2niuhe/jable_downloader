@@ -48,6 +48,23 @@ def get_model_total_video_num(url):
     return total_num
 
 
+def is_query_over(url, cur_video_ids, total_video_num, cached_ids_set):
+    # allow 1% miss
+    if cached_ids_set and total_video_num > 1000 and \
+            abs((total_video_num - len(cached_ids_set))) * 100 < len(cached_ids_set):
+        print("缓存索引和远端误差低于百分之一, 本地 %s 远端 %s 不更新 %s 索引\n" % (
+        len(cached_ids_set), total_video_num, url))
+        print("新增 %s 个索引" % len(cur_video_ids - cached_ids_set))
+
+        return True
+
+    if cached_ids_set and total_video_num > 0:
+        if len(cur_video_ids | cached_ids_set) >= total_video_num:
+            print("和缓存索引合并生效, 退出抓取")
+            return True
+    return False
+
+
 def get_all_video_ids(url, cached_ids_set=None):
     tag_name, last_page_num = get_model_names_and_last_page_num(url)
 
@@ -72,19 +89,10 @@ def get_all_video_ids(url, cached_ids_set=None):
         for a_tag in a_tags:
             video_ids.add(a_tag['href'].split('/')[-2])
 
-        # allow 1% miss
-        if cached_ids_set and total_video_num > 1000 and \
-                abs((total_video_num - len(cached_ids_set))) * 100 < len(cached_ids_set):
-            print("缓存索引和远端误差低于百分之一, 本地 %s 远端 %s 不更新 %s 索引\n" % (len(cached_ids_set), total_video_num, url))
-            print("新增 %s 个索引" % len(video_ids - cached_ids_set))
+        need_break = is_query_over(url, video_ids, total_video_num, cached_ids_set)
+        if need_break:
             video_ids |= cached_ids_set
             break
-
-        if cached_ids_set and total_video_num > 0:
-            if len(video_ids | cached_ids_set) >= total_video_num:
-                video_ids |= cached_ids_set
-                print("和缓存索引合并生效, 退出抓取")
-                break
 
     print('%s => 获取到 %s 个影片' % (tag_name, len(video_ids)))
     return video_ids
