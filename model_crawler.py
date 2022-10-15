@@ -12,7 +12,6 @@ def get_model_names_and_last_page_num(url):
     res = utils.requests_with_retry(url)
 
     last_page_num = 1
-    model_name = "unknown"
 
     content = res.content
     soup = BeautifulSoup(content, 'html.parser')
@@ -23,7 +22,7 @@ def get_model_names_and_last_page_num(url):
     elif "jable.tv/search/" in url:
         model_name = url.replace("https://jable.tv/search/", "")[:-1]
     else:
-        raise Exception("cannot get name of subcription")
+        raise Exception("cannot get name of subscription")
     page_items = soup.select('.pagination>.page-item>.page-link')
     last_item = page_items[-1].get('data-parameters') if page_items else []
     if last_item:
@@ -53,7 +52,7 @@ def is_query_over(url, cur_video_ids, total_video_num, cached_ids_set):
     if cached_ids_set and total_video_num > 1000 and \
             abs((total_video_num - len(cached_ids_set))) * 100 < len(cached_ids_set):
         print("缓存索引和远端误差低于百分之一, 本地 %s 远端 %s 不更新 %s 索引\n" % (
-        len(cached_ids_set), total_video_num, url))
+            len(cached_ids_set), total_video_num, url))
         print("新增 %s 个索引" % len(cur_video_ids - cached_ids_set))
 
         return True
