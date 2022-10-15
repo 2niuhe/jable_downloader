@@ -35,15 +35,15 @@ def requests_with_retry(url, headers=HEADERS, timeout=20, retry=5):
     for i in range(1, retry+1):
         try:
             response = requests.get(url, **query_param)
-        except requests.exceptions.ProxyError:
-            print("Proxy Error: %s, retry later." % url)
+        except Exception as e:
+            if i == retry:
+                print("Unexpected Error: %s" % e)
             time.sleep(120 * i)
             continue
 
         if str(response.status_code).startswith('2'):
             return response
         else:
-            print("url %s response %s, retry later. " % (url, response.status_code))
             time.sleep(120 * i)
             continue
     raise Exception("%s exceed max retry time %s." % (url, retry))
@@ -58,15 +58,15 @@ def cloudscraper_requests_get(url, retry=5):
     for i in range(1, retry+1):
         try:
             response = cloudscraper.create_scraper(browser='chrome', delay=20).get(url, **query_param)
-        except requests.exceptions.ProxyError:
-            print("Proxy Error: %s, retry later." % url)
+        except Exception as e:
+            if i == retry:
+                print("Unexpected Error: %s" % e)
             time.sleep(120 * i)
             continue
 
         if str(response.status_code).startswith('2'):
             return response
         else:
-            print("url %s response %s, retry later. " % (url, response.status_code))
             time.sleep(120 * i)
             continue
     raise Exception("%s exceed max retry time %s" % (url, retry))

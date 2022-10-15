@@ -72,9 +72,9 @@ def download_by_video_url(url):
     video_full_name = get_video_full_name(video_id, page_res)
 
     if os.path.exists(os.path.join(output_dir, video_full_name + '.mp4')):
-        print(video_full_name + "already exist, skip download.")
+        print(video_full_name + " 已经存在，跳过下载")
         return
-    print("start download %s " % video_full_name)
+    print("开始下载 %s " % video_full_name)
     tmp_dir_name = os.path.join(output_dir, video_id)
 
     os.makedirs(tmp_dir_name, exist_ok=True)
@@ -151,8 +151,8 @@ def scrape(ci, folder_path, download_list, urls):
             f.write(content_ts)
 
         download_list.remove(urls)
-        print('\r当前下载: {0} , 剩余 {1} 个, status code: {2}'.format(
-            urls.split('/')[-1], len(download_list), response.status_code), end='', flush=True)
+        print('\r当前下载: {0} , 剩余 {1} 个'.format(
+            urls.split('/')[-1], len(download_list)), end='', flush=True)
 
 
 def prepare_crawl(ci, folder_path, ts_list):
@@ -175,4 +175,4 @@ def start_crawl(ci, folder_path, download_list):
             executor.map(partial(scrape, ci, folder_path,
                                  download_list), download_list)
         down_round += 1
-        print(f', round {down_round}')
+        # print(f', round {down_round}')
