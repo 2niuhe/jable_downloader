@@ -12,11 +12,18 @@ def get_model_names_and_last_page_num(url):
     res = utils.requests_with_retry(url)
 
     last_page_num = 1
+    model_name = "unknown"
 
     content = res.content
     soup = BeautifulSoup(content, 'html.parser')
 
-    model_name = soup.select('#list_videos_common_videos_list > section > div > div > div > h2')[0].text
+    model_name_item = soup.select('#list_videos_common_videos_list > section > div > div > div > h2')
+    if model_name_item:
+        model_name = model_name_item[0].text
+    elif "jable.tv/search/" in url:
+        model_name = url.replace("https://jable.tv/search/", "")[:-1]
+    else:
+        raise Exception("cannot get name of subcription")
     page_items = soup.select('.pagination>.page-item>.page-link')
     last_item = page_items[-1].get('data-parameters') if page_items else []
     if last_item:

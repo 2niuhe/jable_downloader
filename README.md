@@ -61,6 +61,11 @@ ffmpeg -i input.mp4 -c:v libx265 -vtag hvc1 -c:a copy output.mkv
 - proxies: 网络代理配置(需要同时配置http和https)
 - subscriptions： 订阅的视频类别，支持models/tags等，建议通过命令行` python main.py subscription --add `添加
     - 添加订阅信息 `--add` 每次添加一个订阅，一个订阅`--add` 后添加多个url(url之间用空格分隔)表示是多个类型的交集
+    - **订阅支持如下类型的url的任意组合**:
+      - 女优:  https://jable.tv/models/sakura-momo/
+      - 标签:  https://jable.tv/tags/flight-attendant/
+      - 类型:  https://jable.tv/categories/chinese-subtitle/
+      - 搜索:  https://jable.tv/search/天然美少女/
 - videoIdBlockList: 需要跳过的番号列表，默认为空
 
 *如下是订阅了桜空もも的中文字幕视频*
