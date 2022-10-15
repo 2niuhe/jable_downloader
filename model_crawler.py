@@ -18,7 +18,7 @@ def get_model_names_and_last_page_num(url):
 
     model_name = soup.select('#list_videos_common_videos_list > section > div > div > div > h2')[0].text
     page_items = soup.select('.pagination>.page-item>.page-link')
-    last_item = page_items[-1].get('data-parameters')
+    last_item = page_items[-1].get('data-parameters') if page_items else []
     if last_item:
         page_num = last_item.split(":")[-1]
         if page_num.isdigit():
