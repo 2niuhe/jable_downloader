@@ -9,10 +9,10 @@ download jable tv tool
 
 支持功能：
 - **指定视频url下载到指定目录**
-- **添加订阅某女星或者类别的视频，将该影星或类别的视频同步到指定目录**
+- **添加订阅某女星或者类别的视频，将该影星或类别的视频同步下载到本地**
+- **支持断点续传，支持防止重复下载**
+- **支持配置代理**
 - 支持下载视频完毕后下载封面
-- 支持检查输出目录，防止重复下载
-- 支持配置代理
 
 ### Usage
 
@@ -35,6 +35,9 @@ python main.py videos  https://jable.tv/videos/111111/  https://jable.tv/videos/
 
 # 添加对某类别的订阅，如添加`桜空もも`的订阅，添加订阅不会发起下载
 python main.py subscription --add https://jable.tv/models/sakura-momo/
+
+# 添加对多类别交集的订阅，如下添加`桜空もも的中文字幕`的订阅，添加订阅不会发起下载
+python main.py subscription --add https://jable.tv/models/sakura-momo/ https://jable.tv/categories/chinese-subtitle/
 # 查看当前订阅
 python main.py subscription --get
 # 下载/同步订阅内容到本地(不会下载已下载内容)
@@ -45,16 +48,20 @@ python main.py subscription --sync-videos
 ffmpeg -i input.mp4 -c:v libx265 -vtag hvc1 -c:a copy output.mkv
 ```
 
-### Config
+### Config(Optional)
 
 配置项(json文件)说明
 
+> 配置文件提供程序自定义选项，并记录一些订阅信息，配置文件可选
+> 读取配置文件的路径是执行命令的工作路径，文件名为config.json
+
 - downloadVideoCover： 是否下载封面,默认不下载
-- downloadInterval： 每个视频之间的下载间隔，默认300s
+- downloadInterval： 每个视频之间的下载间隔，默认2s
 - outputDir：下载的输出目录，默认当前工作目录
 - proxies: 网络代理配置(需要同时配置http和https)
 - subscriptions： 订阅的视频类别，支持models/tags等，建议通过命令行` python main.py subscription --add `添加
-- videoIdBlockList: 需要跳过的番号列表
+    - 添加订阅信息 `--add` 每次添加一个订阅，一个订阅`--add` 后添加多个url(url之间用空格分隔)表示是多个类型的交集
+- videoIdBlockList: 需要跳过的番号列表，默认为空
 
 *如下是订阅了桜空もも的中文字幕视频*
 

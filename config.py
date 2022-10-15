@@ -4,8 +4,9 @@ import os
 
 CONF = {
     "downloadVideoCover": False,
-    "downloadInterval": 300,
+    "downloadInterval": 2,
     "outputDir": "./",
+    "proxies": {},
     "subscriptions": [],
     "videoIdBlockList": [],
     "headers": {
