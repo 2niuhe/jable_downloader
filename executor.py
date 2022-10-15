@@ -8,6 +8,30 @@ import video_crawler
 from config import CONF
 
 
+def _add_subscription(input_urls):
+    cur_subscription = []
+    for input_url in input_urls:
+        model_crawler.input_url_validator(input_url)
+        name, _ = model_crawler.get_model_names_and_last_page_num(input_url)
+        cur_subscription.append({'url': input_url, 'name': name})
+
+    all_subs = CONF.get('subscriptions', [])
+
+    for subs in all_subs:
+        url_group = set()
+        for sub_info in subs:
+            url_group.add(sub_info['url'])
+        if set(input_urls) == url_group:
+            print("cur_subscription %s already exists." % subs)
+            return
+
+    all_subs.append(cur_subscription)
+    CONF['subscriptions'] = all_subs
+    config.update_config(CONF)
+    print("add cur_subscription success.")
+    print(cur_subscription)
+
+
 def get_need_sync_video_ids(sub):
     # first update cache
     cache_info = utils.get_video_ids_map_from_cache()
@@ -32,27 +56,7 @@ def get_need_sync_video_ids(sub):
 def process_subscription(args):
     if args.add:
         input_urls = args.add
-        cur_subscription = []
-        for input_url in input_urls:
-            model_crawler.input_url_validator(input_url)
-            name, _ = model_crawler.get_model_names_and_last_page_num(input_url)
-            cur_subscription.append({'url': input_url, 'name': name})
-
-        all_subs = CONF.get('subscriptions', [])
-
-        for subs in all_subs:
-            url_group = set()
-            for sub_info in subs:
-                url_group.add(sub_info['url'])
-            if set(input_urls) == url_group:
-                print("cur_subscription %s already exists." % subs)
-                return
-
-        all_subs.append(cur_subscription)
-        CONF['subscriptions'] = all_subs
-        config.update_config(CONF)
-        print("add cur_subscription success.")
-        print(cur_subscription)
+        _add_subscription(input_urls)
 
     elif args.get:
         print("current subscriptions:\n")

@@ -2,7 +2,7 @@
 download jable tv tool
 
 ![GitHub](https://img.shields.io/github/license/2niuhe/jable_downloader) ![GitHub Pipenv locked Python version](https://img.shields.io/github/pipenv/locked/python-version/2niuhe/jable_downloader)
-
+![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/2niuhe/jable_downloader) 
 
 ### Introduction
 下载jable tv视频助手:heart_eyes:

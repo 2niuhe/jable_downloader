@@ -66,8 +66,7 @@ def download_by_video_url(url):
     if not output_dir or output_dir == "./":
         output_dir = os.getcwd()
     else:
-        if not os.path.exists(output_dir):
-            os.makedirs(output_dir)
+        os.makedirs(output_dir, exist_ok=True)
 
     page_res = utils.cloudscraper_requests_get(url, retry=5)
     if not page_res:
@@ -80,8 +79,8 @@ def download_by_video_url(url):
         return
     print("start download %s " % video_full_name)
     tmp_dir_name = os.path.join(output_dir, video_id)
-    if not os.path.exists(tmp_dir_name):
-        os.makedirs(tmp_dir_name)
+
+    os.makedirs(tmp_dir_name, exist_ok=True)
 
     result = re.search("https://.+m3u8", page_res.text)
     m3u8url = result[0]
