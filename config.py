@@ -7,6 +7,7 @@ CONF = {
     "downloadInterval": 2,
     "outputDir": "./",
     "proxies": {},
+    "save_vpn_traffic": False,
     "subscriptions": [],
     "videoIdBlockList": [],
     "headers": {

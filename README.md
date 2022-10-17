@@ -65,6 +65,7 @@ ffmpeg -i input.mp4 -c:v libx265 -vtag hvc1 -c:a copy output.mkv
 - downloadInterval： 每个视频之间的下载间隔，默认2s
 - outputDir：下载的输出目录，默认当前工作目录
 - proxies: 网络代理配置(需要同时配置http和https)
+- save_vpn_traffic: 节省vpn代理流量(默认不开启)，开启后，从CDN下载视频多请求优先不使用代理，请求失败重试时再使用代理，由于存在失败重试切换代理，可能降低下载速度
 - subscriptions： 订阅的视频类别，支持models/tags等，建议通过命令行` python main.py subscription --add `添加
     - 添加订阅信息 `--add` 每次添加一个订阅，一个订阅`--add` 后添加多个url(url之间用空格分隔)表示是多个类型的交集
     - **订阅支持如下类型的url的任意组合**:
@@ -85,6 +86,7 @@ ffmpeg -i input.mp4 -c:v libx265 -vtag hvc1 -c:a copy output.mkv
         "http": "http://127.0.0.1:7890",
         "https": "http://127.0.0.1:7890"
     },
+    "save_vpn_traffic": false,
     "videoIdBlockList": ["abc-123", "def-456"],
     "subscriptions": [
         [

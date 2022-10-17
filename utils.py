@@ -23,19 +23,26 @@ def get_video_ids_map_from_cache():
     return cache
 
 
-def requests_with_retry(url, headers=HEADERS, timeout=20, retry=5):
+def _add_proxy(query_param, retry_index, ignore_proxy):
+    if not ignore_proxy or retry_index > 1:
+        proxies_config = CONF.get('proxies', None)
+        if proxies_config and 'http' in proxies_config and 'https' in proxies_config:
+            query_param['proxies'] = proxies_config
+
+
+def requests_with_retry(url, headers=HEADERS, timeout=20, retry=5, ignore_proxy=False):
     query_param = {
         'headers': headers,
         'timeout': timeout
     }
-    proxies_config = CONF.get('proxies', None)
-    if proxies_config and 'http' in proxies_config and 'https' in proxies_config:
-        query_param['proxies'] = proxies_config
 
     for i in range(1, retry+1):
         try:
+            _add_proxy(query_param, i, ignore_proxy)
             response = requests.get(url, **query_param)
         except Exception as e:
+            if i == 1 and ignore_proxy:
+                continue
             if i == retry:
                 print("Unexpected Error: %s" % e)
             time.sleep(120 * i)

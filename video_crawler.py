@@ -129,15 +129,16 @@ def download_by_video_url(url):
 
 def scrape(ci, folder_path, download_list, urls):
     os.path.split(urls)
-    fileName = urls.split('/')[-1][0:-3]
-    saveName = os.path.join(folder_path, fileName + ".mp4")
-    if os.path.exists(saveName):
+    file_name = urls.split('/')[-1][0:-3]
+    save_filename = os.path.join(folder_path, file_name + ".mp4")
+    if os.path.exists(save_filename):
         print('\r当前目标: {0} 已下载, 故跳过...剩余 {1} 个'.format(
             urls.split('/')[-1], len(download_list)), end='', flush=True)
         download_list.remove(urls)
     else:
         try:
-            response = utils.requests_with_retry(urls, retry=5)
+            ignore_proxy = CONF.get("save_vpn_traffic")
+            response = utils.requests_with_retry(urls, retry=5, ignore_proxy=ignore_proxy)
         except Exception as e:
             print(e)
             print('当前目标: {0} 下载失败, 继续下载剩余内容...剩余 {1} 个'.format(
@@ -147,7 +148,7 @@ def scrape(ci, folder_path, download_list, urls):
         content_ts = response.content
         if ci:
             content_ts = ci.decrypt(content_ts)
-        with open(saveName, 'ab') as f:
+        with open(save_filename, 'ab') as f:
             f.write(content_ts)
 
         download_list.remove(urls)

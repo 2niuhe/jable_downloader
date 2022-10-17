@@ -3,6 +3,7 @@
     "downloadInterval": 300,
     "outputDir": "./",
     "proxies": {},
+    "save_vpn_traffic": false,
     "subscriptions": [],
     "videoIdBlockList": [],
     "headers": {
