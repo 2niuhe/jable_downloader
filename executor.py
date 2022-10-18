@@ -131,7 +131,7 @@ def process_videos(args):
     block_video_ids = {str.lower(video_id) for video_id in config.CONF.get("videoIdBlockList", [])}
     ignore_video_ids = local_video_id_set | block_video_ids
 
-    re_extractor = re.compile(r"[a-zA-Z0-9]{3,}-\d{3,}")
+    re_extractor = re.compile(r"[a-zA-Z0-9]{2,}-\d{3,}")
 
     for video_url in video_urls:
         re_res = re_extractor.search(video_url)
@@ -140,5 +140,5 @@ def process_videos(args):
             if video_id and video_id in ignore_video_ids:
                 print("视频 %s 已经下载，跳过该视频" % video_url)
                 continue
+            ignore_video_ids.add(video_id)
         video_crawler.download_by_video_url(video_url)
-        ignore_video_ids.add(video_id)
