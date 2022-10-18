@@ -85,7 +85,7 @@ def update_video_ids_cache(data):
 
 
 def get_local_video_list(path="./"):
-    re_extractor = re.compile(r"[a-zA-Z0-9]{3,}-\d{3,}")
+    re_extractor = re.compile(r"[a-zA-Z0-9]{2,}-\d{3,}")
 
     def extract_movie_id(full_name):
         foo = re_extractor.search(full_name)
