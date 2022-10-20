@@ -24,6 +24,8 @@ models_parser.add_argument("--get", action='store_true',
                            help="get current subscription")
 models_parser.add_argument("--sync-videos", action='store_true',
                            help="download all subscription related videos")
+models_parser.add_argument("--ids", type=int, metavar='N', nargs='+', default=[],
+                           help="specify subscription ids to use to sync videos")
 
 models_parser.set_defaults(func=process_subscription)
 
