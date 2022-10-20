@@ -3,12 +3,14 @@ download jable tv tool
 
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](https://makeapullrequest.com)
 ![Scrutinizer code quality (GitHub/Bitbucket)](https://img.shields.io/scrutinizer/quality/g/2niuhe/jable_downloader/main)
-![Github_workflow](https://github.com/2niuhe/jable_downloader/actions/workflows/python-package.yml/badge.svg) ![GitHub Pipenv locked Python version](https://img.shields.io/github/pipenv/locked/python-version/2niuhe/jable_downloader)
+![Github_workflow](https://github.com/2niuhe/jable_downloader/actions/workflows/python-package.yml/badge.svg)
+![GitHub Pipenv locked Python version](https://img.shields.io/github/pipenv/locked/python-version/2niuhe/jable_downloader)
 
-![GitHub top language](https://img.shields.io/github/languages/top/2niuhe/jable_downloader)![GitHub](https://img.shields.io/github/license/2niuhe/jable_downloader)
+![GitHub top language](https://img.shields.io/github/languages/top/2niuhe/jable_downloader)
+![GitHub](https://img.shields.io/github/license/2niuhe/jable_downloader)
 ![Scrutinizer build (GitHub/Bitbucket)](https://img.shields.io/scrutinizer/build/g/2niuhe/jable_downloader/main)
 ![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/2niuhe/jable_downloader)
-![GitHub Repo stars](https://img.shields.io/github/stars/2niuhe/jable_downloader?style=social) 
+![GitHub Repo stars](https://img.shields.io/github/stars/2niuhe/jable_downloader?style=social)
 
 ### Introduction
 下载jable tv视频助手:heart_eyes:

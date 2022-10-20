@@ -81,7 +81,7 @@ def process_subscription(args):
         all_subs = CONF.get('subscriptions', [])
         output_path = CONF.get("outputDir", './')
         if args.ids:
-            all_subs = [sub for i, sub in enumerate(all_subs) if i in args.ids]
+            all_subs = [sub for i, sub in enumerate(all_subs) if i+1 in args.ids]
         local_video_id_set = utils.get_local_video_list(path=output_path)
         block_video_ids = {str.lower(video_id) for video_id in config.CONF.get("videoIdBlockList", [])}
         ignore_video_ids = local_video_id_set | block_video_ids
