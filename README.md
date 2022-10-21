@@ -58,9 +58,15 @@ python main.py subscription --sync-videos
 python main.py subscription --sync-videos --ids 1 2
 
 
-# h265编码压缩视频(可选)(体积可以减少超过一半)
+# h265编码压缩视频(可选)(体积可以减少为原1/3，实测1.8G的视频可以压缩到500M，耗时30分钟)
 ffmpeg -i input.mp4 -c:v libx265 -vtag hvc1 -c:a copy output.mkv
 ```
+
+**使用帮助**
+
+1. **下载完视频无法播放或者卡帧**
+    - 解决方案1： 更换视频播放器，推荐[mpv播放器](https://mpv.io/installation/)
+    - 解决方案2： 使用ffmpeg编码`ffmpeg -i input.mp4 -c:v libx264 -vtag hvc1 -c:a copy output.mp4`
 
 ### Config(Optional)
 
@@ -70,32 +76,32 @@ ffmpeg -i input.mp4 -c:v libx265 -vtag hvc1 -c:a copy output.mkv
 > 读取配置文件的路径是执行命令的工作路径，文件名为config.json
 
 - downloadVideoCover： 是否下载封面,默认不下载
-- downloadInterval： 每个视频之间的下载间隔，默认2s
+- downloadInterval： 每个视频之间的下载间隔，默认0s
 - outputDir：下载的输出目录，默认当前工作目录
 - proxies: 网络代理配置(需要同时配置http和https)
 - save_vpn_traffic: 节省vpn代理流量(默认不开启)，开启后，从CDN下载视频的请求优先不使用代理，请求失败重试时再使用代理，由于存在失败重试切换代理，可能降低下载速度
-- subscriptions： 订阅的视频类别，支持models/tags等，建议通过命令行` python main.py subscription --add `添加
+- subscriptions： 记录订阅的视频类别，支持models/tags等，建议通过命令行` python main.py subscription --add `添加
     - 添加订阅信息 `--add` 每次添加一个订阅，一个订阅`--add` 后添加多个url(url之间用空格分隔)表示是多个类型的交集
     - **订阅支持如下类型的url的任意组合**:
       - 女优:  https://jable.tv/models/sakura-momo/
       - 标签:  https://jable.tv/tags/flight-attendant/
       - 类型:  https://jable.tv/categories/chinese-subtitle/
       - 搜索:  https://jable.tv/search/天然美少女/
-- videoIdBlockList: 需要跳过的番号列表，默认为空
+- videoIdBlockList: 需要跳过的番号列表，例如`["abc-123", "def-456"]`，默认为空
 
 *如下是订阅了桜空もも的中文字幕视频*
 
 ```json
 {
     "downloadVideoCover": false,     
-    "downloadInterval": 300,
+    "downloadInterval": 0,
     "outputDir": "./", 
     "proxies": {
         "http": "http://127.0.0.1:7890",
         "https": "http://127.0.0.1:7890"
     },
     "save_vpn_traffic": false,
-    "videoIdBlockList": ["abc-123", "def-456"],
+    "videoIdBlockList": [],
     "subscriptions": [
         [
             {

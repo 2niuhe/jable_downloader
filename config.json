@@ -1,6 +1,6 @@
 {
     "downloadVideoCover": false,
-    "downloadInterval": 300,
+    "downloadInterval": 0,
     "outputDir": "./",
     "proxies": {},
     "save_vpn_traffic": false,

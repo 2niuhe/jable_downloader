@@ -4,7 +4,7 @@ import os
 
 CONF = {
     "downloadVideoCover": False,
-    "downloadInterval": 2,
+    "downloadInterval": 0,
     "outputDir": "./",
     "proxies": {},
     "save_vpn_traffic": False,
