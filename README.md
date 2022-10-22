@@ -78,6 +78,11 @@ ffmpeg -i input.mp4 -c:v libx265 -vtag hvc1 -c:a copy output.mkv
 - downloadVideoCover： 是否下载封面,默认不下载
 - downloadInterval： 每个视频之间的下载间隔，默认0s
 - outputDir：下载的输出目录，默认当前工作目录
+- outputFileFormat: 下载文件的格式，默认是"title.mp4"，即视频标题作为文件名，可选配置如下:
+    - "title.mp4": 默认值，即视频标题作为文件名 (**推荐**)
+    - "id.mp4": 番号作为文件名
+    - "id/title.mp4": 番号目录/视频标题.mp4 (创建子目录，番号作为子目录名，标题作为文件名) 
+    - "id/id.mp4": 番号目录/番号.mp4 （创建子目录，番号作为子目录名，番号作为文件名)
 - proxies: 网络代理配置(需要同时配置http和https)
 - save_vpn_traffic: 节省vpn代理流量(默认不开启)，开启后，从CDN下载视频的请求优先不使用代理，请求失败重试时再使用代理，由于存在失败重试切换代理，可能降低下载速度
 - subscriptions： 记录订阅的视频类别，支持models/tags等，建议通过命令行` python main.py subscription --add `添加

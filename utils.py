@@ -4,7 +4,6 @@ import os
 from pathlib import Path
 import re
 import requests
-import shutil
 import time
 
 from config import CONF
@@ -119,8 +118,6 @@ def merge_mp4(input_path, output_path, video_name, ts_list):
     end_time = time.time()
     print('消耗 {0:.2f} 秒合成视频'.format(end_time - start_time))
     print('%s 下载完成!' % video_name)
-
-    shutil.rmtree(input_path)
 
 
 def delete_m3u8(folder_path):

@@ -1,7 +1,9 @@
 import concurrent.futures
 import copy
 import os
+import pathlib
 import re
+import shutil
 import time
 from functools import partial
 
@@ -57,21 +59,50 @@ def get_cover(html_file, folder_path):
     print(f"cover downloaded as {cover_name}")
 
 
-def download_by_video_url(url):
-    video_id = url.split('/')[-2]
-
+def prepare_output_dir():
     output_dir = CONF.get("outputDir")
-
     if not output_dir or output_dir == "./":
         output_dir = os.getcwd()
     else:
         os.makedirs(output_dir, exist_ok=True)
+    return output_dir
+
+
+def mv_video_and_download_cover(tmp_dir_name, output_dir, video_id, video_full_name, html_page):
+    dst_path = output_dir
+    output_format = CONF.get('outputFileFormat')
+    if output_format == 'id/id.mp4':
+        os.makedirs(tmp_dir_name, exist_ok=True)
+        src_name = os.path.join(output_dir, video_full_name + '.mp4')
+        dst_name = os.path.join(tmp_dir_name, video_id + '.mp4')
+        shutil.move(src_name, dst_name)
+        dst_path = tmp_dir_name
+    elif output_format == 'id/title.mp4':
+        os.makedirs(tmp_dir_name, exist_ok=True)
+        src_name = os.path.join(output_dir, video_full_name + '.mp4')
+        dst_name = os.path.join(tmp_dir_name, video_full_name + '.mp4')
+        shutil.move(src_name, dst_name)
+        dst_path = tmp_dir_name
+    elif output_format == 'id.mp4':
+        src_name = os.path.join(output_dir, video_full_name + '.mp4')
+        dst_name = os.path.join(output_dir, video_id + '.mp4')
+        shutil.move(src_name, dst_name)
+
+    if CONF.get("downloadVideoCover", True):
+        get_cover(html_file=html_page, folder_path=dst_path)
+
+
+def download_by_video_url(url):
+    video_id = url.split('/')[-2]
+
+    output_dir = prepare_output_dir()
 
     page_res = utils.cloudscraper_requests_get(url, retry=5)
 
     video_full_name = get_video_full_name(video_id, page_res)
 
-    if os.path.exists(os.path.join(output_dir, video_full_name + '.mp4')):
+    all_filenames = [file.name for file in pathlib.Path(output_dir).rglob('*.mp4')]
+    if video_full_name + '.mp4' in all_filenames or video_id + '.mp4' in all_filenames:
         print(video_full_name + " 已经存在，跳过下载")
         return
     print("开始下载 %s " % video_full_name)
@@ -122,9 +153,8 @@ def download_by_video_url(url):
     prepare_crawl(ci, tmp_dir_name, ts_list)
 
     merge_mp4(tmp_dir_name, output_dir, video_full_name, ts_list)
-
-    if CONF.get("downloadVideoCover", True):
-        get_cover(html_file=page_res, folder_path=output_dir)
+    shutil.rmtree(tmp_dir_name)
+    mv_video_and_download_cover(tmp_dir_name, output_dir, video_id, video_full_name, page_res)
 
 
 def scrape(ci, folder_path, download_list, urls):

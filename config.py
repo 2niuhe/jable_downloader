@@ -6,6 +6,7 @@ CONF = {
     "downloadVideoCover": False,
     "downloadInterval": 0,
     "outputDir": "./",
+    "outputFileFormat": 'title.mp4',
     "proxies": {},
     "save_vpn_traffic": False,
     "subscriptions": [],

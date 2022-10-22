@@ -2,6 +2,7 @@
     "downloadVideoCover": false,
     "downloadInterval": 0,
     "outputDir": "./",
+    "outputFileFormat": "",
     "proxies": {},
     "save_vpn_traffic": false,
     "subscriptions": [],
