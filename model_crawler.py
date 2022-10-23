@@ -64,6 +64,14 @@ def is_query_over(cur_video_ids, total_video_num, cached_ids_set):
     return False
 
 
+def get_page_url(base_url, page_num):
+    if '/search/' in base_url:
+        page_url = base_url + "?from_videos=%s" % page_num
+    else:
+        page_url = base_url + "?from=%s" % page_num
+    return page_url
+
+
 def get_all_video_ids(url, cached_ids_set=None):
     tag_name, last_page_num = get_model_names_and_last_page_num(url)
 
@@ -77,7 +85,7 @@ def get_all_video_ids(url, cached_ids_set=None):
 
     video_ids = set()
     for page_num in range(1, last_page_num + 1):
-        page_url = url + "?from=%s" % page_num
+        page_url = get_page_url(url, page_num)
         print("\r抓取 %s 第 %s 页 共 %s 页" % (tag_name, page_num, last_page_num), end="", flush=True)
 
         res = utils.requests_with_retry(page_url, retry=20)
@@ -86,7 +94,8 @@ def get_all_video_ids(url, cached_ids_set=None):
         soup = BeautifulSoup(content, 'html.parser')
         a_tags = soup.select('div.img-box>a')
         for a_tag in a_tags:
-            video_ids.add(a_tag['href'].split('/')[-2])
+            if a_tag.get('href'):
+                video_ids.add(a_tag['href'].split('/')[-2])
 
         need_break = is_query_over(video_ids, total_video_num, cached_ids_set)
         if need_break:
