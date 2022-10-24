@@ -53,9 +53,9 @@ python main.py subscription --get
 
 # 下载/同步所有订阅内容到本地(会跳过目标目录里的已下载内容)
 python main.py subscription --sync-videos
-# 下载/同步指定订阅号(1和2)的内容到本地(会跳过目标目录里的已下载内容)
-# --ids不指定默认同步下载所有订阅
-python main.py subscription --sync-videos --ids 1 2
+# 按顺序下载/同步指定订阅号(3和2)的内容到本地(会跳过目标目录里的已下载内容)
+# 订阅号上查看订阅时显示的数字编号，不指定--ids默认同步下载所有订阅
+python main.py subscription --sync-videos --ids 3 2 
 
 
 # h265编码压缩视频(可选)(体积可以减少为原1/3，实测1.8G的视频可以压缩到500M，耗时30分钟)
