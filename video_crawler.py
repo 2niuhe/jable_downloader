@@ -33,6 +33,9 @@ def get_video_full_name(video_id, html_file):
     if len(video_full_name.encode()) > 248:
         video_full_name = video_full_name[:50]
 
+    # remove special char '/'
+    video_full_name = video_full_name.replace('/', '')
+
     return video_full_name
 
 
