@@ -16,6 +16,8 @@ from config import CONF
 from utils import delete_m3u8
 from utils import merge_mp4
 
+avoid_chars = ['/', '\\', '\t', '\n', '\r']
+
 
 def get_video_full_name(video_id, html_file):
     soup = BeautifulSoup(html_file.text, "html.parser")
@@ -33,8 +35,9 @@ def get_video_full_name(video_id, html_file):
     if len(video_full_name.encode()) > 248:
         video_full_name = video_full_name[:50]
 
-    # remove special char '/'
-    video_full_name = video_full_name.replace('/', '')
+    # remove avoid char
+    for char in avoid_chars:
+        video_full_name = video_full_name.replace(char, '')
 
     return video_full_name
 
