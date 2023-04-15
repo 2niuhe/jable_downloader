@@ -26,6 +26,8 @@ download jable tv tool
 
 **使用方法**
 
+> 为了绕过网站新的反爬机制，使用了第三方服务`https://app.scrapingant.com/`，你需要先到网站申请一个token，填到配置文件`config.json`到`sa_token`段中
+
 ```shell
 # 安装依赖
 pip install -r requirements.txt
@@ -119,7 +121,12 @@ ffmpeg -i input.mp4 -c:v libx265 -vtag hvc1 -c:a copy output.mkv
                 "name": "中文字幕"
             }
         ]
-    ]
+    ],
+    "headers": {
+        "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:105.0) Gecko/20100101 Firefox/105.0",
+        "Referer": "https://jable.tv"
+    },
+    "sa_token": "paste your own token here"
 }
 ```
 

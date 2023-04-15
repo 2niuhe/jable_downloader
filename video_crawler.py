@@ -103,7 +103,7 @@ def download_by_video_url(url):
 
     output_dir = prepare_output_dir()
 
-    page_res = utils.cloudscraper_requests_get(url, retry=5)
+    page_res = utils.scrapingant_requests_get(url, retry=5)
 
     video_full_name = get_video_full_name(video_id, page_res)
 

@@ -1,10 +1,10 @@
-import cloudscraper
 import json
 import os
 from pathlib import Path
 import re
 import requests
 import time
+from urllib import parse
 
 from config import CONF
 
@@ -55,15 +55,26 @@ def requests_with_retry(url, headers=HEADERS, timeout=20, retry=5, ignore_proxy=
     raise Exception("%s exceed max retry time %s." % (url, retry))
 
 
-def cloudscraper_requests_get(url, retry=5):
-    query_param = dict()
+def scrapingant_requests_get(url, retry=5):
+    if not CONF.get('sa_token'):
+        print("You need to go to https://app.scrapingant.com/ website to\n apply for a token and fill it in the sa_token field")
+        exit(1)
+
+    query_param = {
+        "timeout": 180
+    }
+
+    sa_api = 'https://api.scrapingant.com/v2/general'
+    qParams = {'url': url, 'x-api-key': CONF.get('sa_token')}
+    reqUrl = f'{sa_api}?{parse.urlencode(qParams)}'
+
     proxies_config = CONF.get('proxies', None)
     if proxies_config and 'http' in proxies_config and 'https' in proxies_config:
         query_param['proxies'] = proxies_config
 
     for i in range(1, retry+1):
         try:
-            response = cloudscraper.create_scraper(browser='chrome', delay=20).get(url, **query_param)
+            response = requests.get(reqUrl, **query_param)
         except Exception as e:
             if i == retry:
                 print("Unexpected Error: %s" % e)
