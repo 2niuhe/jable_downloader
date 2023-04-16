@@ -65,10 +65,13 @@ def scrapingant_requests_get(url, retry=5):
     }
 
     sa_api = 'https://api.scrapingant.com/v2/general'
-    qParams = {'url': url, 'x-api-key': CONF.get('sa_token')}
+    qParams = {'url': url, 'x-api-key': CONF.get('sa_token'), 'browser': 'false'}
+    if CONF.get('sa_mode', None) == 'browser':
+        qParams['browser'] = 'true'
     reqUrl = f'{sa_api}?{parse.urlencode(qParams)}'
 
     proxies_config = CONF.get('proxies', None)
+
     if proxies_config and 'http' in proxies_config and 'https' in proxies_config:
         query_param['proxies'] = proxies_config
 

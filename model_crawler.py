@@ -9,7 +9,7 @@ def input_url_validator(tag_url):
 
 
 def get_model_names_and_last_page_num(url):
-    res = utils.requests_with_retry(url)
+    res = utils.scrapingant_requests_get(url)
 
     last_page_num = 1
 
@@ -34,7 +34,7 @@ def get_model_names_and_last_page_num(url):
 
 
 def get_model_total_video_num(url):
-    res = utils.requests_with_retry(url)
+    res = utils.scrapingant_requests_get(url)
     content = res.content
     soup = BeautifulSoup(content, 'html.parser')
 
@@ -88,7 +88,7 @@ def get_all_video_ids(url, cached_ids_set=None):
         page_url = get_page_url(url, page_num)
         print("\r抓取 %s 第 %s 页 共 %s 页" % (tag_name, page_num, last_page_num), end="", flush=True)
 
-        res = utils.requests_with_retry(page_url, retry=20)
+        res = utils.scrapingant_requests_get(page_url, retry=20)
 
         content = res.content
         soup = BeautifulSoup(content, 'html.parser')

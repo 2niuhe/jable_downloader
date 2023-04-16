@@ -98,6 +98,9 @@ ffmpeg -i input.mp4 -c:v libx265 -vtag hvc1 -c:a copy output.mkv
 - videoIdBlockList: 需要跳过的番号列表，例如`["abc-123", "def-456"]`，默认为空
 - headers: 自定义请求头，一般不需要改动
 - sa_token: **scrapingant服务的token，必须要填一个有效的token**
+- sa_mode: scrapingant服务的模式，可选值是`browser`，默认为空
+    - 默认为空： 使用默认模式，每次请求消耗1个credit，免费用户每月10000个credit
+    - `browser`： 浏览器模式，每次请求消耗10个credit
 
 *如下是订阅了桜空もも的中文字幕视频*
 
