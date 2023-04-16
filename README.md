@@ -27,6 +27,7 @@ download jable tv tool
 **使用方法**
 
 > 为了绕过网站新的反爬机制，使用了第三方服务`https://app.scrapingant.com/`，你需要先到网站申请一个token，填到配置文件`config.json`到`sa_token`段中
+> [申请token方法](https://github.com/2niuhe/jable_downloader/issues/10)
 
 ```shell
 # 安装依赖
@@ -95,6 +96,8 @@ ffmpeg -i input.mp4 -c:v libx265 -vtag hvc1 -c:a copy output.mkv
       - 类型:  https://jable.tv/categories/chinese-subtitle/
       - 搜索:  https://jable.tv/search/天然美少女/
 - videoIdBlockList: 需要跳过的番号列表，例如`["abc-123", "def-456"]`，默认为空
+- headers: 自定义请求头，一般不需要改动
+- sa_token: **scrapingant服务的token，必须要填一个有效的token**
 
 *如下是订阅了桜空もも的中文字幕视频*
 
