@@ -23,7 +23,8 @@ download jable tv tool
 - **支持下载视频完毕后下载封面**
 
 TODO：
-[ ] 不依赖第三方服务，使用selenium用本地浏览器driver抓网页（作为可选模式），欢迎PR
+
+- [ ] 不依赖第三方服务，使用selenium用本地浏览器driver抓网页（作为可选模式），欢迎PR
 
 ### Usage
 
@@ -101,9 +102,9 @@ ffmpeg -i input.mp4 -c:v libx265 -vtag hvc1 -c:a copy output.mkv
 - videoIdBlockList: 需要跳过的番号列表，例如`["abc-123", "def-456"]`，默认为空
 - headers: 自定义请求头，一般不需要改动
 - sa_token: **scrapingant服务的token，必须要填一个有效的token**
-- sa_mode: scrapingant服务的模式，默认为`browser`，可选值如下
-    - `default`： 使用默认模式，每次请求消耗1个credit，免费用户每月10000个credit
-    - `browser`： 浏览器模式，每次请求消耗10个credit，反爬能力更强
+- sa_mode: scrapingant服务的模式，推荐设为`browser`，可选值如下
+    - `default`： 默认模式，每次请求消耗1个credit，免费用户每月10000个credit
+    - `browser`： 浏览器模式，每次请求消耗10个credit，**反爬能力更强**
 
 *如下是订阅了桜空もも的中文字幕视频*
 
