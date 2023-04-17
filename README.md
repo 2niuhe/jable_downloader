@@ -20,7 +20,10 @@ download jable tv tool
 - **添加订阅某女星或者类别的视频，将该影星或类别的视频同步下载到本地**
 - **支持断点续传，支持防止重复下载**
 - **支持配置代理**
-- 支持下载视频完毕后下载封面
+- **支持下载视频完毕后下载封面**
+
+TODO：
+[ ] 不依赖第三方服务，使用selenium用本地浏览器driver抓网页（作为可选模式），欢迎PR
 
 ### Usage
 
@@ -98,9 +101,9 @@ ffmpeg -i input.mp4 -c:v libx265 -vtag hvc1 -c:a copy output.mkv
 - videoIdBlockList: 需要跳过的番号列表，例如`["abc-123", "def-456"]`，默认为空
 - headers: 自定义请求头，一般不需要改动
 - sa_token: **scrapingant服务的token，必须要填一个有效的token**
-- sa_mode: scrapingant服务的模式，可选值是`browser`，默认为空
-    - 默认为空： 使用默认模式，每次请求消耗1个credit，免费用户每月10000个credit
-    - `browser`： 浏览器模式，每次请求消耗10个credit
+- sa_mode: scrapingant服务的模式，默认为`browser`，可选值如下
+    - `default`： 使用默认模式，每次请求消耗1个credit，免费用户每月10000个credit
+    - `browser`： 浏览器模式，每次请求消耗10个credit，反爬能力更强
 
 *如下是订阅了桜空もも的中文字幕视频*
 
@@ -132,7 +135,8 @@ ffmpeg -i input.mp4 -c:v libx265 -vtag hvc1 -c:a copy output.mkv
         "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:105.0) Gecko/20100101 Firefox/105.0",
         "Referer": "https://jable.tv"
     },
-    "sa_token": "paste your own token here"
+    "sa_token": "paste your own token here",
+    "sa_mode": "browser"
 }
 ```
 

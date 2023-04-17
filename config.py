@@ -16,7 +16,7 @@ CONF = {
         "Referer": "https://jable.tv"
     },
     "sa_token": "",
-    "sa_mode": ""
+    "sa_mode": "browser"
 }
 
 
