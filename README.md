@@ -104,7 +104,7 @@ ffmpeg -i input.mp4 -c:v libx265 -vtag hvc1 -c:a copy output.mkv
 - sa_token: **scrapingant服务的token，必须要填一个有效的token**
 - sa_mode: scrapingant服务的模式，推荐设为`browser`，可选值如下
     - `default`： 默认模式，每次请求消耗1个credit，免费用户每月10000个credit
-    - `browser`： 浏览器模式，每次请求消耗10个credit，**反爬能力更强**
+    - `browser`： 浏览器模式，每次请求消耗10个credit，**能力更强**
 
 *如下是订阅了桜空もも的中文字幕视频*
 
