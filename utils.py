@@ -16,6 +16,8 @@ HEADERS = CONF.get("headers")
 
 CHROMEDP_CMD = ""
 
+logged = False
+
 
 def get_video_ids_map_from_cache():
     cache = {}
@@ -60,10 +62,12 @@ def requests_with_retry(url, headers=HEADERS, timeout=20, retry=5, ignore_proxy=
 
 
 def scrapingant_requests_get(url, retry=5) -> str:
+    global logged
     if not CONF.get('sa_token'):
-        print("You need to go to https://app.scrapingant.com/ website to\n apply for a token and fill it in the sa_token field")
-        
-        print("Use local chromedp as a replacement.")
+        if not logged:
+            logged = True
+            print("You need to go to https://app.scrapingant.com/ website to\n apply for a token and fill it in the sa_token field")
+            print("Use local chromedp as a replacement.\n")
         return get_response_from_chromedp(url)
         exit(1)
 
@@ -178,8 +182,6 @@ def get_chromdp_binary_by_cpu_info():
 
 
 def execute_command(command, timeout):
-
-    print(command)
     process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     try:
         output, error = process.communicate(timeout=timeout)
