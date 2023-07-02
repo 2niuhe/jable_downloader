@@ -32,6 +32,14 @@ download jable tv tool
 > 2. 如果`config.json`文件中不配置`sa_token`段，认为使用本地的chromedp下载，这中模式下需要从release中下载对应系统和cpu架构的chromedp_jable
 > 文件，放到main.py同级目录，这种模式下需要电脑安装有chrome浏览器
 
+TODO:
+
+- [ ] 处理登录和VIP视频
+- [ ] 优化订阅缓存，避免重复请求
+- [ ] 逐步迁移到golang
+- [ ] 内存中合并文件，减少磁盘IO
+- [ ] 支持更多的网站
+
 ```shell
 # 安装依赖
 pip install -r requirements.txt
