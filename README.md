@@ -22,16 +22,15 @@ download jable tv tool
 - **支持配置代理**
 - **支持下载视频完毕后下载封面**
 
-TODO：
-
-- [ ] 不依赖第三方服务，使用selenium用本地浏览器driver抓网页（作为可选模式），欢迎PR
-
 ### Usage
 
 **使用方法**
 
-> 为了绕过网站新的反爬机制，使用了第三方服务`https://app.scrapingant.com/`，你需要先到网站申请一个token，填到配置文件`config.json`到`sa_token`段中
+> 为了绕过网站新的反爬机制，有以下两种使用方式：
+> 1. 使用了第三方服务`https://app.scrapingant.com/`，你需要先到网站申请一个token，填到配置文件`config.json`到`sa_token`段中
 > [申请token方法](https://github.com/2niuhe/jable_downloader/issues/10)
+> 2. 如果`config.json`文件中不配置`sa_token`段，认为使用本地的chromedp下载，这中模式下需要从release中下载对应系统和cpu架构的chromedp_jable
+> 文件，放到main.py同级目录，这种模式下需要电脑安装有chrome浏览器
 
 ```shell
 # 安装依赖
@@ -101,7 +100,7 @@ ffmpeg -i input.mp4 -c:v libx265 -vtag hvc1 -c:a copy output.mkv
       - 搜索:  https://jable.tv/search/天然美少女/
 - videoIdBlockList: 需要跳过的番号列表，例如`["abc-123", "def-456"]`，默认为空
 - headers: 自定义请求头，一般不需要改动
-- sa_token: **scrapingant服务的token，必须要填一个有效的token**
+- sa_token: **可选值，scrapingant服务的token，必须要填一个有效的token**
 - sa_mode: scrapingant服务的模式，推荐设为`browser`，可选值如下
     - `default`： 默认模式，每次请求消耗1个credit，免费用户每月10000个credit
     - `browser`： 浏览器模式，每次请求消耗10个credit，**能力更强**

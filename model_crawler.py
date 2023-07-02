@@ -9,11 +9,9 @@ def input_url_validator(tag_url):
 
 
 def get_model_names_and_last_page_num(url):
-    res = utils.scrapingant_requests_get(url)
+    content = utils.scrapingant_requests_get(url)
 
     last_page_num = 1
-
-    content = res.content
     soup = BeautifulSoup(content, 'html.parser')
 
     model_name_item = soup.select('#list_videos_common_videos_list > section > div > div > div > h2')
@@ -34,8 +32,8 @@ def get_model_names_and_last_page_num(url):
 
 
 def get_model_total_video_num(url):
-    res = utils.scrapingant_requests_get(url)
-    content = res.content
+    content = utils.scrapingant_requests_get(url)
+
     soup = BeautifulSoup(content, 'html.parser')
 
     total_num = 0
@@ -88,9 +86,8 @@ def get_all_video_ids(url, cached_ids_set=None):
         page_url = get_page_url(url, page_num)
         print("\r抓取 %s 第 %s 页 共 %s 页" % (tag_name, page_num, last_page_num), end="", flush=True)
 
-        res = utils.scrapingant_requests_get(page_url, retry=20)
+        content = utils.scrapingant_requests_get(page_url, retry=20)
 
-        content = res.content
         soup = BeautifulSoup(content, 'html.parser')
         a_tags = soup.select('div.img-box>a')
         for a_tag in a_tags:

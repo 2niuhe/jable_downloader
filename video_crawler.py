@@ -19,8 +19,8 @@ from utils import merge_mp4
 avoid_chars = ['/', '\\', '\t', '\n', '\r']
 
 
-def get_video_full_name(video_id, html_file):
-    soup = BeautifulSoup(html_file.text, "html.parser")
+def get_video_full_name(video_id, html_str):
+    soup = BeautifulSoup(html_str, "html.parser")
     video_full_name = video_id
 
     for meta in soup.find_all("meta"):
@@ -42,8 +42,8 @@ def get_video_full_name(video_id, html_file):
     return video_full_name
 
 
-def get_cover(html_file, folder_path):
-    soup = BeautifulSoup(html_file.text, "html.parser")
+def get_cover(html_str, folder_path):
+    soup = BeautifulSoup(html_str, "html.parser")
     cover_name = f"{os.path.basename(folder_path)}.jpg"
     cover_path = os.path.join(folder_path, cover_name)
     for meta in soup.find_all("meta"):
@@ -74,7 +74,7 @@ def prepare_output_dir():
     return output_dir
 
 
-def mv_video_and_download_cover(tmp_dir_name, output_dir, video_id, video_full_name, html_page):
+def mv_video_and_download_cover(tmp_dir_name, output_dir, video_id, video_full_name, html_str):
     dst_path = output_dir
     output_format = CONF.get('outputFileFormat')
     if output_format == 'id/id.mp4':
@@ -95,7 +95,7 @@ def mv_video_and_download_cover(tmp_dir_name, output_dir, video_id, video_full_n
         shutil.move(src_name, dst_name)
 
     if CONF.get("downloadVideoCover", True):
-        get_cover(html_file=html_page, folder_path=dst_path)
+        get_cover(html_str, folder_path=dst_path)
 
 
 def download_by_video_url(url):
@@ -103,9 +103,9 @@ def download_by_video_url(url):
 
     output_dir = prepare_output_dir()
 
-    page_res = utils.scrapingant_requests_get(url, retry=5)
+    page_str = utils.scrapingant_requests_get(url, retry=5)
 
-    video_full_name = get_video_full_name(video_id, page_res)
+    video_full_name = get_video_full_name(video_id, page_str)
 
     all_filenames = [file.name for file in pathlib.Path(output_dir).rglob('*.mp4')]
     if video_full_name + '.mp4' in all_filenames or video_id + '.mp4' in all_filenames:
@@ -116,7 +116,11 @@ def download_by_video_url(url):
 
     os.makedirs(tmp_dir_name, exist_ok=True)
 
-    result = re.search("https://.+m3u8", page_res.text)
+    result = re.search("https://.+m3u8", page_str)
+    if not result:
+        print("Get m3u8 url failed.")
+        print(page_str)
+        exit(1)
     m3u8url = result[0]
 
     m3u8url_list = m3u8url.split('/')
@@ -160,7 +164,7 @@ def download_by_video_url(url):
 
     merge_mp4(tmp_dir_name, output_dir, video_full_name, ts_list)
     shutil.rmtree(tmp_dir_name)
-    mv_video_and_download_cover(tmp_dir_name, output_dir, video_id, video_full_name, page_res)
+    mv_video_and_download_cover(tmp_dir_name, output_dir, video_id, video_full_name, page_str)
 
 
 def scrape(ci, folder_path, download_list, urls):

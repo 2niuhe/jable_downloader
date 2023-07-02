@@ -2,6 +2,8 @@ import json
 import os
 from pathlib import Path
 import re
+import platform
+import subprocess
 import requests
 import time
 from urllib import parse
@@ -11,6 +13,8 @@ from config import CONF
 video_index_cache_filename = "./jable_index_cache.json"
 
 HEADERS = CONF.get("headers")
+
+CHROMEDP_CMD = ""
 
 
 def get_video_ids_map_from_cache():
@@ -55,9 +59,12 @@ def requests_with_retry(url, headers=HEADERS, timeout=20, retry=5, ignore_proxy=
     raise Exception("%s exceed max retry time %s." % (url, retry))
 
 
-def scrapingant_requests_get(url, retry=5):
+def scrapingant_requests_get(url, retry=5) -> str:
     if not CONF.get('sa_token'):
         print("You need to go to https://app.scrapingant.com/ website to\n apply for a token and fill it in the sa_token field")
+        
+        print("Use local chromedp as a replacement.")
+        return get_response_from_chromedp(url)
         exit(1)
 
     query_param = {
@@ -85,7 +92,7 @@ def scrapingant_requests_get(url, retry=5):
             continue
 
         if str(response.status_code).startswith('2'):
-            return response
+            return response.text
         else:
             time.sleep(120 * i)
             continue
@@ -139,3 +146,61 @@ def delete_m3u8(folder_path):
     for file in files:
         if file.endswith('.m3u8'):
             os.remove(os.path.join(folder_path, file))
+
+
+def get_chromdp_binary_by_cpu_info():
+    # 获取操作系统信息
+    system = platform.system()
+    # 获取处理器架构信息
+    arch = platform.machine()
+    short_arch = ""
+
+    # 判断操作系统
+    if system not in  ('Linux', 'Windows', 'Darwin'):
+        raise Exception('OS %s is not supported' % system)
+
+    # 判断处理器架构
+    if 'arm' in arch:
+        short_arch = 'arm64'
+    elif 'x86' in arch or 'amd64' in arch:
+        short_arch = 'x86_64'
+    else:
+        raise Exception('Arch %s is not supported' % arch)
+    cmd = 'chromedp_jable_%s_%s' % (short_arch, system)
+    cmd = cmd.lower()
+
+    current_dir = os.getcwd()
+    file_path = os.path.join(current_dir, cmd)
+    
+    if not os.path.isfile(file_path):
+        raise Exception("Canno find %s, you need download and put it in %s" % (cmd, current_dir))
+    return cmd
+
+
+def execute_command(command, timeout):
+
+    print(command)
+    process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    try:
+        output, error = process.communicate(timeout=timeout)
+    except subprocess.TimeoutExpired:
+        print('kang timeout')
+        process.kill()
+        output, error = process.communicate()
+    
+    return output.decode('utf-8')
+
+
+def get_response_from_chromedp(url):
+    global CHROMEDP_CMD
+    if not CHROMEDP_CMD:
+        CHROMEDP_CMD = get_chromdp_binary_by_cpu_info()
+
+    cmd = "./%s %s" % (CHROMEDP_CMD, url)
+    proxy = CONF.get('proxies', {}).get('http', None)
+
+    if proxy:
+        proxy_flag = " --proxy %s" % proxy
+        cmd += proxy_flag
+    
+    return execute_command(cmd, 30)

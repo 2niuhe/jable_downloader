@@ -1,0 +1,5 @@
+调用chrome无头浏览器，抓取jable的网页html，绕过javascript等限制
+
+需要运行环境中已经安装chrome浏览器
+
+此处只展示代码，在项目release里有已经编译好的二进制包

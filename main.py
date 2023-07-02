@@ -32,5 +32,8 @@ models_parser.set_defaults(func=process_subscription)
 
 if __name__ == '__main__':
     args = parser.parse_args()
+    if not hasattr(args, 'func'):
+        parser.print_help()
+        exit()
 
     args.func(args)
