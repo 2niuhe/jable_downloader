@@ -182,11 +182,11 @@ def get_chromdp_binary_by_cpu_info():
 
 
 def execute_command(command, timeout):
+    print(command)
     process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     try:
         output, error = process.communicate(timeout=timeout)
     except subprocess.TimeoutExpired:
-        print('kang timeout')
         process.kill()
         output, error = process.communicate()
     
