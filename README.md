@@ -35,10 +35,7 @@ download jable tv tool
 TODO:
 
 - [ ] 处理登录和VIP视频
-- [ ] 优化订阅缓存，避免重复请求
-- [ ] 逐步迁移到golang
-- [ ] 内存中合并文件，减少磁盘IO
-- [ ] 支持更多的网站
+
 
 ```shell
 # 安装依赖
