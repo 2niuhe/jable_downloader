@@ -125,33 +125,6 @@ def get_local_video_list(path="./"):
     return result
 
 
-def merge_mp4(input_path, output_path, video_name, ts_list):
-    start_time = time.time()
-    print('开始合成视频...')
-
-    for i in range(len(ts_list)):
-        file = ts_list[i].split('/')[-1][0:-3] + '.mp4'
-        full_path = os.path.join(input_path, file)
-        if os.path.exists(full_path):
-            with open(full_path, 'rb') as f1:
-                with open(os.path.join(output_path, video_name + '.mp4'), 'ab') as f2:
-                    f2.write(f1.read())
-        else:
-            # TODO: retry download
-            print(file + "不存在, 跳过该文件， 最终文件可能不完整 ")
-
-    end_time = time.time()
-    print('消耗 {0:.2f} 秒合成视频'.format(end_time - start_time))
-    print('%s 下载完成!' % video_name)
-
-
-def delete_m3u8(folder_path):
-    files = os.listdir(folder_path)
-    for file in files:
-        if file.endswith('.m3u8'):
-            os.remove(os.path.join(folder_path, file))
-
-
 def get_chromdp_binary_by_cpu_info():
     # 获取操作系统信息
     system = platform.system()

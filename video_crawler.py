@@ -1,5 +1,5 @@
 import concurrent.futures
-import copy
+import io
 import os
 import pathlib
 import re
@@ -13,11 +13,11 @@ from bs4 import BeautifulSoup
 
 import utils
 from config import CONF
-from utils import delete_m3u8
-from utils import merge_mp4
 
 avoid_chars = ['/', '\\', '\t', '\n', '\r']
 
+BUFFER_SIZE = 1024 * 1024 * 20  # 20MB
+MAX_WORKER = 8
 
 def get_video_full_name(video_id, html_str):
     soup = BeautifulSoup(html_str, "html.parser")
@@ -74,28 +74,26 @@ def prepare_output_dir():
     return output_dir
 
 
-def mv_video_and_download_cover(tmp_dir_name, output_dir, video_id, video_full_name, html_str):
-    dst_path = output_dir
-    output_format = CONF.get('outputFileFormat')
+def mv_video_and_download_cover(output_dir, video_id, video_full_name, html_str):
+    src_file_name = os.path.join(output_dir, video_full_name + '.mp4')
+    dest_dir_name = output_dir
+    output_format = CONF.get('outputFileFormat', '')
     if output_format == 'id/id.mp4':
-        os.makedirs(tmp_dir_name, exist_ok=True)
-        src_name = os.path.join(output_dir, video_full_name + '.mp4')
-        dst_name = os.path.join(tmp_dir_name, video_id + '.mp4')
-        shutil.move(src_name, dst_name)
-        dst_path = tmp_dir_name
+        dest_dir_name = os.path.join(output_dir, video_id)
+        os.makedirs(dest_dir_name, exist_ok=True)
+        dst_filename = os.path.join(dest_dir_name, video_id + '.mp4')
+        shutil.move(src_file_name, dst_filename)
     elif output_format == 'id/title.mp4':
-        os.makedirs(tmp_dir_name, exist_ok=True)
-        src_name = os.path.join(output_dir, video_full_name + '.mp4')
-        dst_name = os.path.join(tmp_dir_name, video_full_name + '.mp4')
-        shutil.move(src_name, dst_name)
-        dst_path = tmp_dir_name
+        dest_dir_name = os.path.join(output_dir, video_id)
+        os.makedirs(dest_dir_name, exist_ok=True)
+        dst_filename = os.path.join(dest_dir_name, video_full_name + '.mp4')
+        shutil.move(src_file_name, dst_filename)
     elif output_format == 'id.mp4':
-        src_name = os.path.join(output_dir, video_full_name + '.mp4')
-        dst_name = os.path.join(output_dir, video_id + '.mp4')
-        shutil.move(src_name, dst_name)
+        dst_filename = os.path.join(output_dir, video_id + '.mp4')
+        shutil.move(src_file_name, dst_filename)
 
     if CONF.get("downloadVideoCover", True):
-        get_cover(html_str, folder_path=dst_path)
+        get_cover(html_str, folder_path=dest_dir_name)
 
 
 def download_by_video_url(url):
@@ -112,9 +110,6 @@ def download_by_video_url(url):
         print(video_full_name + " 已经存在，跳过下载")
         return
     print("开始下载 %s " % video_full_name)
-    tmp_dir_name = os.path.join(output_dir, video_id)
-
-    os.makedirs(tmp_dir_name, exist_ok=True)
 
     result = re.search("https://.+m3u8", page_str)
     if not result:
@@ -126,8 +121,8 @@ def download_by_video_url(url):
     m3u8url_list = m3u8url.split('/')
     m3u8url_list.pop(-1)
     download_url = '/'.join(m3u8url_list)
+    m3u8file = os.path.join(output_dir, video_id + '.m3u8')
 
-    m3u8file = os.path.join(tmp_dir_name, video_id + '.m3u8')
     response = utils.requests_with_retry(m3u8url)
     with open(m3u8file, 'wb') as f:
         f.write(response.content)
@@ -135,6 +130,7 @@ def download_by_video_url(url):
     m3u8obj = m3u8.load(m3u8file)
     m3u8uri = ''
     m3u8iv = ''
+    os.remove(m3u8file)
 
     for key in m3u8obj.keys:
         if key:
@@ -158,62 +154,73 @@ def download_by_video_url(url):
     else:
         ci = ''
 
-    delete_m3u8(tmp_dir_name)
-
-    prepare_crawl(ci, tmp_dir_name, ts_list)
-
-    merge_mp4(tmp_dir_name, output_dir, video_full_name, ts_list)
-    shutil.rmtree(tmp_dir_name)
-    mv_video_and_download_cover(tmp_dir_name, output_dir, video_id, video_full_name, page_str)
+    download_m3u8_video(ci, output_dir, ts_list, video_full_name)
+    mv_video_and_download_cover(output_dir, video_id, video_full_name, page_str)
 
 
-def scrape(ci, folder_path, download_list, urls):
-    os.path.split(urls)
-    file_name = urls.split('/')[-1][0:-3]
-    save_filename = os.path.join(folder_path, file_name + ".mp4")
-    if os.path.exists(save_filename):
-        print('\r当前目标: {0} 已下载, 故跳过...剩余 {1} 个'.format(
-            urls.split('/')[-1], len(download_list)), end='', flush=True)
-        download_list.remove(urls)
-    else:
-        try:
-            ignore_proxy = CONF.get("save_vpn_traffic")
-            response = utils.requests_with_retry(urls, retry=5, ignore_proxy=ignore_proxy)
-        except Exception as e:
-            print(e)
-            print('当前目标: {0} 下载失败, 继续下载剩余内容...剩余 {1} 个'.format(
-                urls.split('/')[-1], len(download_list)))
-            return
+def scrape(ci, urls):
+    try:
+        ignore_proxy = CONF.get("save_vpn_traffic")
+        response = utils.requests_with_retry(urls, retry=5, ignore_proxy=ignore_proxy)
+    except Exception as e:
+        print(e)
+        return
 
-        content_ts = response.content
-        if ci:
-            content_ts = ci.decrypt(content_ts)
-        with open(save_filename, 'ab') as f:
-            f.write(content_ts)
+    content_ts = response.content
+    if ci:
+        content_ts = ci.decrypt(content_ts)
+    return content_ts
 
-        download_list.remove(urls)
-        print('\r当前下载: {0} , 剩余 {1} 个'.format(
-            urls.split('/')[-1], len(download_list)), end='', flush=True)
+def download_m3u8_video(ci, output_dir, ts_list: list, video_full_name):
+    buffer = io.BytesIO()
+    tmp_video_filename = os.path.join(output_dir, video_full_name + ".tmp")
+    target_video_filename = os.path.join(output_dir, video_full_name + ".mp4")
+    log_filename = os.path.join(output_dir, video_full_name + ".log")
 
+    last_ts = ''
+    if os.path.exists(log_filename):
+        with open(log_filename) as log_f:
+            last_ts = log_f.readline()
 
-def prepare_crawl(ci, folder_path, ts_list):
-    download_list = copy.deepcopy(ts_list)
-
+    tmp_video_open_mode = 'wb'
+    if last_ts in ts_list and os.path.exists(tmp_video_filename):
+        index_start = ts_list.index(last_ts) + 1
+        print('已经下载 %s 个文件, 开始断点续传...' % index_start)
+        ts_list = ts_list[index_start:]
+        tmp_video_open_mode = 'ab'
+    
+    download_list = ts_list
     start_time = time.time()
     print('开始下载 ' + str(len(download_list)) + ' 个文件..', end='')
     print('预计等待时间: {0:.2f} 分钟 视视频大小和网络速度而定)'.format(len(download_list) / 150))
 
-    start_crawl(ci, folder_path, download_list)
 
+    with open(tmp_video_filename, tmp_video_open_mode) as file, open(log_filename, 'w') as log_f:
+        with concurrent.futures.ThreadPoolExecutor(max_workers=MAX_WORKER) as executor:
+            results = executor.map(partial(scrape, ci), download_list)
+            total_num = len(download_list)
+            for i, result in enumerate(results):
+                if not result:
+                    print('error get content, skip')
+                else:
+                    print('\r当前下载: {0} , 剩余 {1} 个'.format(
+                        i+1, total_num-i-1), end='', flush=True)
+
+                    buffer.write(result)
+                    # Adjust the buffer size as needed
+                    if buffer.tell() >= BUFFER_SIZE:  # Example: 1MB buffer
+                        buffer.seek(0)
+                        file.write(buffer.read())
+                        buffer.seek(0)
+                        buffer.truncate()
+                        log_f.write(download_list[i])
+                        log_f.seek(0)
+
+        # Write any remaining data in the buffer to the file
+        buffer.seek(0)
+        file.write(buffer.read())
+
+    shutil.move(tmp_video_filename, target_video_filename)
+    os.remove(log_filename)
     end_time = time.time()
     print('\n消耗 {0:.2f} 分钟 同步1个视频完成 !'.format((end_time - start_time) / 60))
-
-
-def start_crawl(ci, folder_path, download_list):
-    down_round = 0
-    while download_list:
-        with concurrent.futures.ThreadPoolExecutor(max_workers=8) as executor:
-            executor.map(partial(scrape, ci, folder_path,
-                                 download_list), download_list)
-        down_round += 1
-        # print(f', round {down_round}')
