@@ -127,17 +127,17 @@ def get_local_video_list(path="./"):
 
 def get_chromdp_binary_by_cpu_info():
     # 获取操作系统信息
-    system = platform.system()
+    system = platform.system().lower()
     # 获取处理器架构信息
-    arch = platform.machine()
+    arch = platform.machine().lower()
     short_arch = ""
 
     # 判断操作系统
-    if system not in  ('Linux', 'Windows', 'Darwin'):
+    if system not in  ('linux', 'windows', 'darwin'):
         raise Exception('OS %s is not supported' % system)
 
     # 判断处理器架构
-    if 'arm' in arch:
+    if 'arm' in arch or 'aarch64' in arch:
         short_arch = 'arm64'
     elif 'x86' in arch or 'amd64' in arch:
         short_arch = 'x86_64'
