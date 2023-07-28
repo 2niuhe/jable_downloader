@@ -11,6 +11,7 @@ download jable tv tool
 ![Scrutinizer build (GitHub/Bitbucket)](https://img.shields.io/scrutinizer/build/g/2niuhe/jable_downloader/main)
 ![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/2niuhe/jable_downloader)
 ![GitHub Repo stars](https://img.shields.io/github/stars/2niuhe/jable_downloader?style=social)
+![Github All Releases](https://img.shields.io/github/downloads/2niuhe/jable_downloader/total.svg)
 
 ### Introduction
 下载jable tv视频助手:heart_eyes:
