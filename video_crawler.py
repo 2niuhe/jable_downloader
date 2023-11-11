@@ -160,8 +160,7 @@ def download_by_video_url(url):
 
 def scrape(ci, urls):
     try:
-        ignore_proxy = CONF.get("save_vpn_traffic")
-        response = utils.requests_with_retry(urls, retry=5, ignore_proxy=ignore_proxy)
+        response = utils.requests_with_retry(urls, retry=5)
     except Exception as e:
         print(e)
         return

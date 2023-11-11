@@ -20,7 +20,8 @@ def get_model_names_and_last_page_num(url):
     elif "jable.tv/search/" in url:
         model_name = url.replace("https://jable.tv/search/", "")[:-1]
     else:
-        raise Exception("cannot get name of subscription")
+        print("cannot get name of subscription")
+        model_name = 'unknown: %s' % url
     page_items = soup.select('.pagination>.page-item>.page-link')
     last_item = page_items[-1].get('data-parameters') if page_items else []
     if last_item:

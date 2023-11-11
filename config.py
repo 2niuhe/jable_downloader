@@ -8,7 +8,6 @@ CONF = {
     "outputDir": "./",
     "outputFileFormat": 'title.mp4',
     "proxies": {},
-    "save_vpn_traffic": False,
     "subscriptions": [],
     "videoIdBlockList": [],
     "headers": {
