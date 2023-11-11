@@ -3,19 +3,13 @@ import os
 
 
 CONF = {
-    "downloadVideoCover": False,
-    "downloadInterval": 0,
     "outputDir": "./",
     "outputFileFormat": 'title.mp4',
     "proxies": {},
-    "subscriptions": [],
-    "videoIdBlockList": [],
     "headers": {
         "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:105.0) Gecko/20100101 Firefox/105.0",
         "Referer": "https://jable.tv"
-    },
-    "sa_token": "",
-    "sa_mode": "browser"
+    }
 }
 
 
