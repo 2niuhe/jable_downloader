@@ -10,23 +10,9 @@ from urllib import parse
 
 from config import CONF
 
-video_index_cache_filename = "./jable_index_cache.json"
-
 HEADERS = CONF.get("headers")
 
 CHROMEDP_CMD = ""
-
-logged = False
-
-
-def get_video_ids_map_from_cache():
-    cache = {}
-    if os.path.exists(video_index_cache_filename):
-        with open(video_index_cache_filename, 'r', encoding='utf-8') as f:
-            cache = json.load(f)
-
-    return cache
-
 
 def _add_proxy(query_param):
     proxies_config = CONF.get('proxies', None)
@@ -57,50 +43,9 @@ def requests_with_retry(url, headers=HEADERS, timeout=20, retry=5):
 
 
 def scrapingant_requests_get(url, retry=5) -> str:
-    global logged
-    if not CONF.get('sa_token'):
-        if not logged:
-            logged = True
-            print("You need to go to https://app.scrapingant.com/ website to\n apply for a token and fill it in the sa_token field")
-            print("Use local chromedp as a replacement.\n")
-        return get_response_from_chromedp(url)
-        exit(1)
-
-    query_param = {
-        "timeout": 180
-    }
-
-    sa_api = 'https://api.scrapingant.com/v2/general'
-    qParams = {'url': url, 'x-api-key': CONF.get('sa_token'), 'browser': 'false'}
-    if CONF.get('sa_mode', None) == 'browser':
-        qParams['browser'] = 'true'
-    reqUrl = f'{sa_api}?{parse.urlencode(qParams)}'
-
-    proxies_config = CONF.get('proxies', None)
-
-    if proxies_config and 'http' in proxies_config and 'https' in proxies_config:
-        query_param['proxies'] = proxies_config
-
-    for i in range(1, retry+1):
-        try:
-            response = requests.get(reqUrl, **query_param)
-        except Exception as e:
-            if i == retry:
-                print("Unexpected Error: %s" % e)
-            time.sleep(120 * i)
-            continue
-
-        if str(response.status_code).startswith('2'):
-            return response.text
-        else:
-            time.sleep(120 * i)
-            continue
-    raise Exception("%s exceed max retry time %s" % (url, retry))
+    return get_response_from_chromedp(url)
 
 
-def update_video_ids_cache(data):
-    with open(video_index_cache_filename, 'w', encoding='utf8') as f:
-        json.dump(data, f, ensure_ascii=False)
 
 
 def get_local_video_list(path="./"):

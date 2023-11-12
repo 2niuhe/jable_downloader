@@ -2,7 +2,7 @@
 # coding: utf-8
 
 import argparse
-from executor import process_subscription, process_videos
+from executor import process_videos
 
 parser = argparse.ArgumentParser(description="jable downloader")
 

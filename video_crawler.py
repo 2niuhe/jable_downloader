@@ -42,29 +42,6 @@ def get_video_full_name(video_id, html_str):
     return video_full_name
 
 
-def get_cover(html_str, folder_path):
-    soup = BeautifulSoup(html_str, "html.parser")
-    cover_name = f"{os.path.basename(folder_path)}.jpg"
-    cover_path = os.path.join(folder_path, cover_name)
-    for meta in soup.find_all("meta"):
-        meta_content = meta.get("content")
-        if not meta_content:
-            continue
-        if "preview.jpg" not in meta_content:
-            continue
-        try:
-            r = utils.requests_with_retry(meta_content)
-            with open(cover_path, "wb") as cover_fh:
-                r.raw.decode_content = True
-                for chunk in r.iter_content(chunk_size=1024):
-                    if chunk:
-                        cover_fh.write(chunk)
-        except Exception as e:
-            print(f"unable to download cover: {e}")
-
-    print(f"cover downloaded as {cover_name}")
-
-
 def prepare_output_dir():
     output_dir = CONF.get("outputDir")
     if not output_dir or output_dir == "./":
@@ -91,9 +68,6 @@ def mv_video_and_download_cover(output_dir, video_id, video_full_name, html_str)
     elif output_format == 'id.mp4':
         dst_filename = os.path.join(output_dir, video_id + '.mp4')
         shutil.move(src_file_name, dst_filename)
-
-    if CONF.get("downloadVideoCover", True):
-        get_cover(html_str, folder_path=dest_dir_name)
 
 
 def download_by_video_url(url):
