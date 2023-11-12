@@ -20,11 +20,13 @@ def _add_proxy(query_param):
         query_param['proxies'] = proxies_config
 
 
-def requests_with_retry(url, headers=HEADERS, timeout=20, retry=5):
+def requests_with_retry(url, refer_url=None, headers=HEADERS, timeout=20, retry=5):
     query_param = {
         'headers': headers,
         'timeout': timeout
     }
+    if refer_url:
+        query_param['headers']["Referer"] = refer_url
     _add_proxy(query_param)
     for i in range(1, retry+1):
         try:
@@ -32,20 +34,18 @@ def requests_with_retry(url, headers=HEADERS, timeout=20, retry=5):
         except Exception as e:
             if i == retry:
                 print("Unexpected Error: %s" % e)
-            time.sleep(120 * i)
+            time.sleep(60 * i)
             continue
         if str(response.status_code).startswith('2'):
             return response
         else:
-            time.sleep(120 * i)
+            time.sleep(60 * i)
             continue
     raise Exception("%s exceed max retry time %s." % (url, retry))
 
 
-def scrapingant_requests_get(url, retry=5) -> str:
+def get_page_from_chromedp(url, retry=5) -> str:
     return get_response_from_chromedp(url)
-
-
 
 
 def get_local_video_list(path="./"):

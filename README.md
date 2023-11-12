@@ -16,12 +16,18 @@ download jable tv tool
 ### Introduction
 下载jable tv视频助手:heart_eyes:
 
+> **旧版支持订阅等其他功能的在archive分支或者从release下载**
+> [旧版分支](https://github.com/2niuhe/jable_downloader/tree/archive)
+> [v1.2.1旧版release](https://github.com/2niuhe/jable_downloader/releases/tag/v1.2.1)
+
 支持功能：
 - **指定视频url下载到指定目录**
-- **添加订阅某女星或者类别的视频，将该影星或类别的视频同步下载到本地**
 - **支持断点续传，支持防止重复下载**
 - **支持配置代理**
-- **支持下载视频完毕后下载封面**
+- **支持url列表**
+  - m3u8类型
+  - jable
+  - missav(TODO)
 
 ### Usage
 
@@ -40,7 +46,7 @@ pip install -r requirements.txt
 python main.py --help
 
 # 指定视频url下载，指定多个url会按队列逐个下载(下面url替换为自己的url)
-python main.py videos  https://jable.tv/videos/111111/  https://jable.tv/videos/222222/
+python main.py  https://jable.tv/videos/111111/  https://jable.tv/videos/222222/
 
 
 
@@ -58,10 +64,9 @@ ffmpeg -i input.mp4 -c:v libx265 -vtag hvc1 -c:a copy output.mkv
 
 配置项(json文件)说明
 
-> 配置文件提供程序自定义选项，并记录一些订阅信息，配置文件可选
+> 配置文件提供程序自定义选项，配置文件可选
 > 读取配置文件的路径是执行命令的工作路径，文件名为config.json
 
-- downloadVideoCover： 是否下载封面,默认不下载
 - outputDir：下载的输出目录，默认当前工作目录
 - outputFileFormat: 下载文件的格式，默认是"title.mp4"，即视频标题作为文件名，可选配置如下:
     - "title.mp4": 默认值，即视频标题作为文件名 (**推荐**)
@@ -69,10 +74,9 @@ ffmpeg -i input.mp4 -c:v libx265 -vtag hvc1 -c:a copy output.mkv
     - "id/title.mp4": 番号目录/视频标题.mp4 (创建子目录，番号作为子目录名，标题作为文件名) 
     - "id/id.mp4": 番号目录/番号.mp4 （创建子目录，番号作为子目录名，番号作为文件名)
 - proxies: 网络代理配置(需要同时配置http和https)
-
 - headers: 自定义请求头，一般不需要改动
 
-*如下是订阅了桜空もも的中文字幕视频*
+*如下是配置了代理的示例*
 
 ```json
 {
@@ -84,7 +88,6 @@ ffmpeg -i input.mp4 -c:v libx265 -vtag hvc1 -c:a copy output.mkv
     },
     "headers": {
         "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:105.0) Gecko/20100101 Firefox/105.0",
-
     }
 }
 ```

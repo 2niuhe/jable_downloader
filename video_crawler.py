@@ -6,6 +6,7 @@ import re
 import shutil
 import time
 from functools import partial
+import uuid
 
 import m3u8
 from Crypto.Cipher import AES
@@ -70,12 +71,12 @@ def mv_video_and_download_cover(output_dir, video_id, video_full_name, html_str)
         shutil.move(src_file_name, dst_filename)
 
 
-def download_by_video_url(url):
+def download_jable_by_video_url(url, refer_url=''):
     video_id = url.split('/')[-2]
-
+    jable_refer = url
     output_dir = prepare_output_dir()
 
-    page_str = utils.scrapingant_requests_get(url, retry=5)
+    page_str = utils.get_page_from_chromedp(url, retry=5)
 
     video_full_name = get_video_full_name(video_id, page_str)
 
@@ -97,7 +98,7 @@ def download_by_video_url(url):
     download_url = '/'.join(m3u8url_list)
     m3u8file = os.path.join(output_dir, video_id + '.m3u8')
 
-    response = utils.requests_with_retry(m3u8url)
+    response = utils.requests_with_retry(m3u8url, refer_url=jable_refer)
     with open(m3u8file, 'wb') as f:
         f.write(response.content)
 
@@ -119,7 +120,7 @@ def download_by_video_url(url):
     if m3u8uri:
         m3u8key_url = download_url + '/' + m3u8uri
 
-        response = utils.requests_with_retry(m3u8key_url)
+        response = utils.requests_with_retry(m3u8key_url, refer_url=jable_refer)
         content_key = response.content
 
         vt = m3u8iv.replace("0x", "")[:16].encode()
@@ -128,13 +129,13 @@ def download_by_video_url(url):
     else:
         ci = ''
 
-    download_m3u8_video(ci, output_dir, ts_list, video_full_name)
+    download_m3u8_video(ci, output_dir, ts_list, video_full_name, refer=jable_refer)
     mv_video_and_download_cover(output_dir, video_id, video_full_name, page_str)
 
 
-def scrape(ci, urls):
+def scrape(ci, urls, refer=None):
     try:
-        response = utils.requests_with_retry(urls, retry=5)
+        response = utils.requests_with_retry(urls, refer_url=refer, retry=5)
     except Exception as e:
         print(e)
         return
@@ -144,7 +145,47 @@ def scrape(ci, urls):
         content_ts = ci.decrypt(content_ts)
     return content_ts
 
-def download_m3u8_video(ci, output_dir, ts_list: list, video_full_name):
+
+def download_m3u8_directly(m3u8url, refer_url=''):
+    m3u8url_list = m3u8url.split('/')
+    m3u8url_list.pop(-1)
+    download_url = '/'.join(m3u8url_list)
+    m3u8file = str(uuid.uuid1()) + '.m3u8'
+
+    response = utils.requests_with_retry(m3u8url, refer_url=refer_url)
+    with open(m3u8file, 'wb') as f:
+        f.write(response.content)
+
+    m3u8obj = m3u8.load(m3u8file)
+    m3u8uri = ''
+    m3u8iv = ''
+    os.remove(m3u8file)
+    for key in m3u8obj.keys:
+        if key:
+            m3u8uri = key.uri
+            m3u8iv = key.iv
+
+    ts_list = []
+    for seg in m3u8obj.segments:
+        ts_url = download_url + '/' + seg.uri
+        ts_list.append(ts_url)
+
+    if m3u8uri:
+        m3u8key_url = download_url + '/' + m3u8uri
+
+        response = utils.requests_with_retry(m3u8key_url, refer_url=refer_url)
+        content_key = response.content
+
+        vt = m3u8iv.replace("0x", "")[:16].encode()
+
+        ci = AES.new(content_key, AES.MODE_CBC, vt)
+    else:
+        ci = ''
+    output_dir = prepare_output_dir()
+    download_m3u8_video(ci, output_dir, ts_list, 'm3u8_' + str(uuid.uuid1()), refer=refer_url)
+
+
+def download_m3u8_video(ci, output_dir, ts_list: list, video_full_name, refer=''):
     buffer = io.BytesIO()
     tmp_video_filename = os.path.join(output_dir, video_full_name + ".tmp")
     target_video_filename = os.path.join(output_dir, video_full_name + ".mp4")
@@ -170,7 +211,7 @@ def download_m3u8_video(ci, output_dir, ts_list: list, video_full_name):
 
     with open(tmp_video_filename, tmp_video_open_mode) as file, open(log_filename, 'w') as log_f:
         with concurrent.futures.ThreadPoolExecutor(max_workers=MAX_WORKER) as executor:
-            results = executor.map(partial(scrape, ci), download_list)
+            results = executor.map(partial(scrape, ci, refer), download_list)
             total_num = len(download_list)
             for i, result in enumerate(results):
                 if not result:
